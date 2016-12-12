@@ -12,9 +12,9 @@ _RCTHEIGHT = 50
 _RCTWIDTH = 80
 _CURRENTMONTH = 0
 
-
-##DATABASE CONNECTION
-#-----##TODO##
+#########################################################
+##DATABASE CONNECTION                                   #
+#########################################################
 
 # tekur inn dag og skilar lista af ID fyrir thann dag
 # def returnDay(day):
@@ -48,7 +48,9 @@ try:
     close()
 except Exception: pass
 
-##CALENDER FUNCTIONS
+#########################################################
+##CALENDER FUNCTIONS                                    #
+#########################################################
 
 def Week():
     l = []
@@ -89,9 +91,9 @@ def CreateMonthDict(MONTH):
         MDict[day+1] = [X,Y]
     return MDict
 
-
-##GUI CLASS:
-
+#########################################################
+##GUI CLASS:                                            #
+#########################################################
 class Application(tk.Frame):
     def __init__(self,master=None):
         super().__init__(master)
@@ -207,9 +209,9 @@ class Application(tk.Frame):
 
 
 
-
-##START
-
+#########################################################
+##START                                                 #
+#########################################################
 root = tk.Tk()
 app = Application(master=root)
 app.mainloop()
