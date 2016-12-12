@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import *
 import datetime
 import calendar as C
+import psycopg2
 
 ##GLOBAL VARIABLES
 _RECTANGLESIZE = 5
@@ -11,6 +12,37 @@ _RCTWIDTH = 80
 
 ##DATABASE CONNECTION
 #-----##TODO##
+
+# tekur inn dag og skilar lista af ID fyrir thann dag
+# def returnDay(day):
+
+# tekur inn ID numer og skilar ollu sem er i tvi ID
+
+def insertInto(summary, description, day, start, end, allDay):
+    cur.execute("INSERT INTO cal(summary, description, day, starttime, endtime, allday) VALUES(%s, %s, %s, %s, %s, %s)", (summary, description, day, start, end, allDay))
+    conn.commit()
+
+def connect():
+    # connect to the PostgreSQL server
+    print('Connecting to the PostgreSQL database...')
+    try:
+        conn = psycopg2.connect("dbname='calTest' user='postgres' host='localhost' password='py'")
+    except:
+        print ("I am unable to connect to the database")
+
+    cur = conn.cursor()
+
+    return cur, conn
+
+def close():
+    
+    cur.close()
+    if conn is not None:
+        conn.close()
+        print('Database connection closed.')
+
+cur, conn = connect()
+close()
 
 
 ##CALENDER FUNCTIONS
