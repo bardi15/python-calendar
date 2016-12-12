@@ -56,6 +56,7 @@ class Application(tk.Frame):
         self.pack()
         self.Weekdays()
         self.Days()
+        #self.CreateEvent()
 
     def Weekdays(self):
         TF = Frame(master=None)
@@ -81,6 +82,43 @@ class Application(tk.Frame):
             day.grid(row=X, column=Y)
             text = day.create_text(10, 10, anchor="nw")
             day.insert(text, 25, str(DAY))
+
+    def CreateEvent(self,date):
+        toplevel = Toplevel()
+        summary = Label(toplevel, text='Title')
+        summary.grid(row=0, column=0)
+        summaryEntry = Entry(toplevel)
+        summaryEntry.grid(row=0, column=1)
+        
+        description = Label(toplevel, text='Description')
+        description.grid(row=1, column=0)
+        description = Entry(toplevel)
+        description.grid(row=1, column=1)
+
+        day = Label(toplevel, text='Date')
+        day.grid(row=2, column=0)
+        day = Entry(toplevel)
+        day.grid(row=2, column=1)
+
+        starttime = Label(toplevel, text='Starts')
+        starttime.grid(row=3, column=0)
+        starttime = Entry(toplevel)
+        starttime.grid(row=3, column=1)
+
+        enddtime = Label(toplevel, text='Ends')
+        enddtime.grid(row=4, column=0)
+        enddtime = Entry(toplevel)
+        enddtime.grid(row=4, column=1)
+
+        allday = Label(toplevel, text='All Day?')
+        allday.grid(row=5, column=0)
+        allday = Entry(toplevel)
+        allday.grid(row=5, column=1)
+
+        dax = Label(toplevel, text=str(date))
+        dax.grid(row=6, column=1)
+
+        
 
 
 
