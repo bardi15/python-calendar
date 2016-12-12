@@ -1,12 +1,15 @@
 import tkinter as tk
 from tkinter import *
 import datetime
+from datetime import date,timedelta
+from dateutil.relativedelta import relativedelta
 import calendar as C
 
 ##GLOBAL VARIABLES
 _RECTANGLESIZE = 5
 _RCTHEIGHT = 50
 _RCTWIDTH = 80
+_CURRENTMONTH = 0
 
 
 ##DATABASE CONNECTION
@@ -21,24 +24,31 @@ def Week():
         l.append(C.day_name[i])
     return l
 
-def DateInformation():
-    today = datetime.datetime.today()
+def LastMonth(offset):
+    firstdayofCurrMonth = date.today().replace(day=1)
+    MonthOffset = firstdayofCurrMonth + relativedelta(months=+ offset)
+    return MonthOffset
+    
+def DateInformation(offset):
+    today = LastMonth(offset)
     month = today.month
     weekday = today.weekday()
     monthRange = C.monthrange(today.year, today.month)
     dict = {}
-    dict['DayOfMonth'] = today.day
-    dict['NameOfCurrDay'] = C.day_name[weekday]
+    dict['CurrentDay'] = datetime.datetime.today() ##NÚVERANDI DAGSETNING ÓHÁÐ OFFSET
     dict['NameOfCurrMonth'] = C.month_name[month]
     dict['DaysInMonth'] = monthRange[1]
     dict['FirstDayOfMonth'] = monthRange[0]
+    dict['Year'] = today.year
     dict['DaysInWeek'] = 7
+    print(dict)
     return dict
 
-def CreateMonthDict():
-    D = DateInformation()
+def CreateMonthDict(MONTH):
+    D = DateInformation(MONTH)
     Location = []
     MDict = {}
+    print(D['DaysInMonth'])
     for i in range (D['DaysInMonth']):
         day = i
         starting = (day + D['FirstDayOfMonth'])
@@ -54,10 +64,20 @@ class Application(tk.Frame):
     def __init__(self,master=None):
         super().__init__(master)
         self.pack()
+        self.Month()
         self.Weekdays()
         self.Days()
-        #self.CreateEvent()
-
+        
+        #self.CreateEvent(4)
+    def Month(self):
+        TM = Frame(master=None)
+        TM.pack()
+        CurrMonth = DateInformation(_CURRENTMONTH)['NameOfCurrMonth']
+        mon = tk.Canvas(TM, width=_RCTWIDTH*7, height=_RCTHEIGHT)
+        mon.grid(row=0,column=0)
+        text = mon.create_text(10, 10, anchor="nw")
+        mon.insert(text,25,CurrMonth)
+        
     def Weekdays(self):
         TF = Frame(master=None)
         Weekdays = Week()
@@ -68,10 +88,11 @@ class Application(tk.Frame):
             box.grid(row=0,column=i)
             canvas_id = box.create_text(10, 10, anchor="nw")
             box.insert(canvas_id, 25, Weekdays[i])
+            
     def Days(self):
         TX = Frame(master=None)
         TX.pack()
-        CMonth= CreateMonthDict()
+        CMonth= CreateMonthDict(_CURRENTMONTH)
 
         for key,value in CMonth.items():
             DAY = key
@@ -115,9 +136,15 @@ class Application(tk.Frame):
         allday = Entry(toplevel)
         allday.grid(row=5, column=1)
 
+        p = 'hallo'
+        
         dax = Label(toplevel, text=str(date))
         dax.grid(row=6, column=1)
-
+        submit = Button(toplevel, text ="Submit", command=self.on_submit(p))
+        submit.grid(row=6, column=0)
+        
+    def on_submit(self,p):
+        print(p)
         
 
 
