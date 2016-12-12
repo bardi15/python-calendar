@@ -4,7 +4,7 @@ import datetime
 from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
 import calendar as C
-import psycopg2
+# import psycopg2
 
 ##GLOBAL VARIABLES
 _RECTANGLESIZE = 5
@@ -49,13 +49,25 @@ try:
 except Exception: pass
 
 #########################################################
+##BUTTON FUNCTIONS:                                     #
+#########################################################
+
+def prevMonth():
+    _CURRENTMONTH -= 1
+    print(_CURRENTMONTH)
+
+def nextMonth():
+    _CURRENTMONTH += 1
+    print(_CURRENTMONTH)
+
+#########################################################
 ##CALENDER FUNCTIONS                                    #
 #########################################################
 
 def Week():
     l = []
     for i in range(7):
-        l.append(C.day_name[i])
+        l.append(C.day_abbr[i])
     return l
 
 def LastMonth(offset):
@@ -94,23 +106,23 @@ def CreateMonthDict(MONTH):
 #########################################################
 ##GUI CLASS:                                            #
 #########################################################
-class Application(tk.Frame):
+class Calender(tk.Frame):
     def __init__(self,master=None):
         super().__init__(master)
         self.pack()
-        self.Month()
+        # self.Month()
         self.Weekdays()
         self.Days()
         
         #self.CreateEvent(4)
-    def Month(self):
-        TM = Frame(master=None)
-        TM.pack()
-        CurrMonth = DateInformation(_CURRENTMONTH)['NameOfCurrMonth']
-        mon = tk.Canvas(TM, width=_RCTWIDTH*7, height=_RCTHEIGHT)
-        mon.grid(row=0,column=0)
-        text = mon.create_text(10, 10, anchor="nw")
-        mon.insert(text,25,CurrMonth)
+    # def Month(self):
+    #     TM = Frame(master=None)
+    #     TM.pack()
+    #     CurrMonth = DateInformation(_CURRENTMONTH)['NameOfCurrMonth']
+    #     mon = tk.Canvas(TM, width=_RCTWIDTH*7, height=_RCTHEIGHT)
+    #     mon.grid(row=0,column=0)
+    #     text = mon.create_text(10, 10, anchor="nw")
+    #     mon.insert(text,25,CurrMonth)
         
     def Weekdays(self):
         TF = Frame(master=None)
@@ -179,6 +191,36 @@ class Application(tk.Frame):
         
     def on_submit(self,p):
         print(p)
+
+class Application(Frame):
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        self.parent = master
+        self.initUI()
+        
+    def initUI(self):
+        currMonth = DateInformation(_CURRENTMONTH)
+        curr = currMonth['NameOfCurrMonth']
+        self.top = Frame(self.parent, bg='',width=603, height=50)
+        self.top.pack(fill='both',expand=True)
+        CurrentMonth = Label(self.top, text=curr)
+        CurrentMonth.pack(side=LEFT)
+        CurrentMonth.config(font=("mincho", 40))
+
+        self.middle = Frame(self.parent,bg='green', width=603, height=200)
+        self.middle.pack(expand=False)
+        d = Calender(self.middle)
+        d.pack()
+        self.bottom = Frame(self.parent, bg='', width=603, height=50)
+        self.bottom.pack(expand=False)
+        self.prev = Button(self.bottom, text='Previous', command=prevMonth)
+        self.prev.pack(side=LEFT, padx=5, pady=5)
+        self.next = Button(self.bottom, text='Next', command=nextMonth)
+        self.next.pack(side=RIGHT,padx=5, pady=5)
+
+
+
+
         
 
 
@@ -212,10 +254,15 @@ class Application(tk.Frame):
 #########################################################
 ##START                                                 #
 #########################################################
+# root = tk.Tk()
+# app = Application(master=root)
+# app.mainloop()
 root = tk.Tk()
-app = Application(master=root)
-app.mainloop()
+app = Application(root)
 
+app.parent.geometry('603x450')
+app.parent.resizable(0,0)
+app.mainloop()
 
             
 
