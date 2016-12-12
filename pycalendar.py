@@ -20,33 +20,33 @@ _CURRENTMONTH = 0
 # def returnDay(day):
 
 # tekur inn ID numer og skilar ollu sem er i tvi ID
+try:
+    def insertInto(summary, description, day, start, end, allDay):
+        cur.execute("INSERT INTO cal(summary, description, day, starttime, endtime, allday) VALUES(%s, %s, %s, %s, %s, %s)", (summary, description, day, start, end, allDay))
+        conn.commit()
 
-def insertInto(summary, description, day, start, end, allDay):
-    cur.execute("INSERT INTO cal(summary, description, day, starttime, endtime, allday) VALUES(%s, %s, %s, %s, %s, %s)", (summary, description, day, start, end, allDay))
-    conn.commit()
+    def connect():
+        # connect to the PostgreSQL server
+        print('Connecting to the PostgreSQL database...')
+        try:
+            conn = psycopg2.connect("dbname='calTest' user='postgres' host='localhost' password='py'")
+        except:
+            print ("I am unable to connect to the database")
 
-def connect():
-    # connect to the PostgreSQL server
-    print('Connecting to the PostgreSQL database...')
-    try:
-        conn = psycopg2.connect("dbname='calTest' user='postgres' host='localhost' password='py'")
-    except:
-        print ("I am unable to connect to the database")
+        cur = conn.cursor()
 
-    cur = conn.cursor()
+        return cur, conn
 
-    return cur, conn
+    def close():
+        
+        cur.close()
+        if conn is not None:
+            conn.close()
+            print('Database connection closed.')
 
-def close():
-    
-    cur.close()
-    if conn is not None:
-        conn.close()
-        print('Database connection closed.')
-
-cur, conn = connect()
-close()
-
+    cur, conn = connect()
+    close()
+except Exception: pass
 
 ##CALENDER FUNCTIONS
 
