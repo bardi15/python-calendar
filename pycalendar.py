@@ -4,7 +4,7 @@ import datetime
 from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
 import calendar as C
-# import psycopg2
+import sqlite3
 
 ##GLOBAL VARIABLES
 _RECTANGLESIZE = 5
@@ -16,37 +16,53 @@ _CURRENTMONTH = 0
 ##DATABASE CONNECTION                                   #
 #########################################################
 
-# tekur inn dag og skilar lista af ID fyrir thann dag
-# def returnDay(day):
 
-# tekur inn ID numer og skilar ollu sem er i tvi ID
-try:
-    def insertInto(summary, description, day, start, end, allDay):
-        cur.execute("INSERT INTO cal(summary, description, day, starttime, endtime, allday) VALUES(%s, %s, %s, %s, %s, %s)", (summary, description, day, start, end, allDay))
-        conn.commit()
+########  Test data  ########
+summ = 'Boliti'
+desc = 'alltaf i boltanum'
+days = '2016-12-18'
+stim = '12:00'
+etim = '10:00'
+stat = True
 
-    def connect():
-        # connect to the PostgreSQL server
-        print('Connecting to the PostgreSQL database...')
-        try:
-            conn = psycopg2.connect("dbname='calTest' user='postgres' host='localhost' password='py'")
-        except:
-            print ("I am unable to connect to the database")
+# breytan sem thu setur inn i returnID fallid til ad testa
+t = '2016-12-18'
 
-        cur = conn.cursor()
+# insertIntoDB(summ, desc, days, stim, etim, stat)
 
-        return cur, conn
+#############################
 
-    def close():
-        
-        cur.close()
-        if conn is not None:
-            conn.close()
-            print('Database connection closed.')
+# Tenging vid gagnagrunninn
+connection = sqlite3.connect('calendarDatabase.db')
+cursor = connection.cursor()
 
-    cur, conn = connect()
-    close()
-except Exception: pass
+# Byr til tofluna ef hun er ekki til
+def createTable():
+    try:
+        cursor.execute('CREATE TABLE IF NOT EXISTS cal(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, summary VARCHAR(50), description VARCHAR(300), day DATE, starttime TIME, endtime TIME, allday BOOLEAN)')
+        connection.commit()
+    except sqlite3.OperationalError:
+
+# Insertar inn i tofluna 
+def insertIntoDB(summary, description, days, starttime, endtime, allday):
+    cursor.execute("INSERT INTO cal(summary, description, day, starttime, endtime, allday) VALUES(?, ?, ?, ?, ?, ?)", (summary, description, days, starttime, endtime, allday))
+    connection.commit()
+
+#skilar lista af ID sem er == og day parameter
+def returnID(day):
+    idList = []
+    result = cursor.execute('SELECT ID FROM cal WHERE day = ?', (day, ))
+
+    for row in result:
+        idList.append(row[0])
+    
+    return idList
+
+#lokar connection og cursor.
+def closeConnection():
+    cursor.close()
+    connection.close()
+
 
 #########################################################
 ##BUTTON FUNCTIONS:                                     #
@@ -263,6 +279,6 @@ app = Application(root)
 app.parent.geometry('603x450')
 app.parent.resizable(0,0)
 app.mainloop()
+closeConnection()
 
-            
 
