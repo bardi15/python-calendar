@@ -197,8 +197,20 @@ class Calender(tk.Frame):
         self.Days()
 
     def CreateEvent(self, event):
-        self.toplevel = Toplevel()
-        test = event.widget.interesting
+        self.toplevel = Toplevel(self)
+        events = event.widget.interesting
+        self.mainFrame = Frame(self.toplevel)
+        self.mainFrame.pack(side=LEFT)
+        r = 1
+
+        for i in events:
+            theEvent = i[4]+'-'+i[5]+' - '+i[1]
+            self.event = Label(self.mainFrame, text=theEvent)
+            self.event.grid(row=r, column=0)
+            r+=1
+
+        self.addEvent = Button(self.toplevel, text="Create New Event", command=Event, bd=1, relief=SOLID)
+        self.addEvent.pack(side=LEFT)
         
     def Weekdays(self):
         TF = Frame(self)
@@ -263,15 +275,17 @@ class Application(Frame):
         self.month.pack(side=TOP)
 
         self.d = Calender(self.parent)
-        self.d.pack()
+        self.d.pack(pady=30)
 
+        self.bottomFrame = Frame(self.parent, height=50, width=550, background='yellow')
+        self.bottomFrame.pack(side=BOTTOM, pady=(20, 30))
         
-        self.prev = Button(self.parent, text='Previous', command=self.prevMonth)
-        self.prev.pack(side=BOTTOM)
-        self.next = Button(self.parent, text='Next', command=self.nextMonth)
-        self.next.pack(side=BOTTOM)
-        self.addEvent = Button(self.parent, text='Add Event', command=Event)
-        self.addEvent.pack(side=BOTTOM)
+        self.prev = Button(self.bottomFrame, text='Previous', command=self.prevMonth)
+        self.prev.pack(side=LEFT)
+        self.next = Button(self.bottomFrame, text='Next', command=self.nextMonth)
+        self.next.pack(side=LEFT)
+        self.addEvent = Button(self.bottomFrame, text='Add Event', command=Event)
+        self.addEvent.pack(side=LEFT)
 
     def prevMonth(self):
         currentMonth(-1)
@@ -292,7 +306,7 @@ class Application(Frame):
         self.month.pack(side=TOP)
         self.d.destroy()
         self.d = Calender(self.parent)
-        self.d.pack()
+        self.d.pack(pady=30)
         self.update()
 
 #########################################################
@@ -313,7 +327,7 @@ class Event(tk.Frame):
         
         description = Label(self.toplevel, text='Description')
         description.grid(row=1, column=0)
-        self.descriptionEntry = Text(self.toplevel, height=2, width=15)
+        self.descriptionEntry = Text(self.toplevel, height=2, width=15, bd=1, relief=SOLID)
         self.descriptionEntry.grid(row=1, column=1)
 
         v = StringVar()
