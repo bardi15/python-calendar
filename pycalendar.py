@@ -3,6 +3,7 @@ from tkinter import *
 import datetime
 from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
+import time
 import calendar as C
 import sqlite3
 from dateutil.parser import parse
@@ -186,8 +187,17 @@ class Calender(tk.Frame):
             Y = value[1]
             DATE = value[2]
             DAYEVENTS = value[3]
-            
-            if len(DAYEVENTS) > 0:
+            ALLDAY = False
+
+            ##CHECKS IF ALL DAY:
+            for i in DAYEVENTS:
+                if i[6] == 1:
+                    ALLDAY = True
+
+            if ALLDAY:
+                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT,
+                                bg='blue')                
+            elif len(DAYEVENTS) > 0:
                 day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT,
                                 bg='brown')
             else:
@@ -284,8 +294,8 @@ class Event(tk.Frame):
 
         allday = Label(toplevel, text='All Day?')
         allday.grid(row=5, column=0)
-        self.alldayEntry = tk.Checkbutton(toplevel,
-                                    text="")
+        self.y = tk.IntVar()
+        self.alldayEntry = tk.Checkbutton(toplevel,text="", variable=self.y)
         self.alldayEntry.grid(row=5, column=1)
 
         dax = Label(toplevel, text='')
@@ -303,11 +313,16 @@ class Event(tk.Frame):
 def AddToCalendar(CreateEventData):
     Title = CreateEventData.summaryEntry.get()
     Description = CreateEventData.descriptionEntry.get('1.0',END)
+    
     Date = CreateEventData.dayEntry.get()
+    SDate = Date.split('-')
+    DateTimeDate = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]))
+
     Starts = CreateEventData.starttimeEntry.get()
     Ends = CreateEventData.enddtimeEntry.get()
-    #AllDay = CreateEventData.alldayEntry.get()
-    print(Title,Description,Date,Starts,Ends)
+    AllDay = CreateEventData.y.get()
+    insertIntoDB(Title, Description, DateTimeDate, Starts, Ends, AllDay)
+    print(Title,Description,Date,Starts,Ends,DateTimeDate,AllDay)
 
 ##VIEW SINGLE DAY ON CALENDAR
 #-----##TODO##
@@ -332,17 +347,18 @@ def AddToCalendar(CreateEventData):
 
 
 ##TEST DATA FOR SQL
-#createTable()
+createTable()
 
 x = datetime.datetime(2016,11,13)
-insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
+#print(x)
+#insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
 
 x = datetime.datetime(2016,12,13)
-insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
+#insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
 
 x = datetime.datetime(2016,12,17)
-insertIntoDB('BYE', 'THAR', x, '14:00', '18:00', 'False')
-currentMonth(0,1,2)
+#insertIntoDB('BYE', 'THAR', x, '14:00', '18:00', 'False')
+#currentMonth(0,1,2)
 
 root = tk.Tk()
 app = Application(root)
