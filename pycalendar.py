@@ -198,18 +198,24 @@ class Calender(tk.Frame):
 
     def CreateEvent(self, event):
         self.toplevel = Toplevel(self)
-        events = event.widget.interesting
-        self.mainFrame = Frame(self.toplevel)
-        self.mainFrame.pack(side=LEFT)
-        r = 1
+        self.toplevel.geometry('400x400')
 
+        self.main = Frame(self.toplevel, height=370, width=400)
+        self.main.pack(side=TOP, anchor='nw')
+
+        self.buttonFrame = Frame(self.toplevel, height=30, width=400, bg='blue')
+        self.buttonFrame.pack(side=BOTTOM, expand=False)
+        events = event.widget.interesting
+
+        r = 0
+        events.sort(key = lambda x: x[4])
         for i in events:
             theEvent = i[4]+'-'+i[5]+' - '+i[1]
-            self.event = Label(self.mainFrame, text=theEvent)
-            self.event.grid(row=r, column=0)
-            r+=1
+            self.event = Label(self.main, text=theEvent)
+            self.event.pack(anchor='nw')
+            r+=2
 
-        self.addEvent = Button(self.toplevel, text="Create New Event", command=Event, bd=1, relief=SOLID)
+        self.addEvent = Button(self.buttonFrame, text="Create New Event", command=Event, bd=1, relief=SOLID)
         self.addEvent.pack(side=LEFT)
         
     def Weekdays(self):
@@ -236,19 +242,29 @@ class Calender(tk.Frame):
             X = value[0]
             Y = value[1]
             DATE = value[2]
+            FrameColor = 'white'
+            #TODAY = False
             DAYEVENTS = value[3]
-            ALLDAY = False
+            if len(DAYEVENTS) > 0:
+                FrameColor = 'brown'
+            #ALLDAY = False
             ##CHECKS IF ALL DAY:
             for i in DAYEVENTS:
                 if i[6] == 1:
-                    ALLDAY = True
+                    #ALLDAY = True
+                    FrameColor = 'blue'
+            if DATE.date() == datetime.datetime.today().date():
+                #TODAY = True
+                FrameColor = 'green'
+                #print('TODAY')
 
-            if ALLDAY:
-                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='blue')                
-            elif len(DAYEVENTS) > 0:
-                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='brown')
-            else:
-                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='white') 
+            day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg=FrameColor)
+##            if ALLDAY:
+##                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='blue')                
+##            elif len(DAYEVENTS) > 0:
+##                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='brown')
+##            else:
+##                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='white') 
             day.grid(row=X, column=Y)
             text = day.create_text(10, 10, anchor="nw")
             day.interesting = DAYEVENTS
@@ -258,6 +274,7 @@ class Calender(tk.Frame):
 #########################################################
 ##APPLICATION FRAMEWORK                                 #
 #########################################################
+
 class Application(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
@@ -265,7 +282,6 @@ class Application(Frame):
         self.initUI()
         
     def initUI(self):
-
         dateInfo = DateInformation(currentMonth())
         currMonth = dateInfo['NameOfCurrMonth']
         currYear = dateInfo['Year']
@@ -289,11 +305,11 @@ class Application(Frame):
 
     def prevMonth(self):
         currentMonth(-1)
-        self.changeMonth()
+        self.changeMonth(self.month, self.d)
 
     def nextMonth(self):
         currentMonth(1)
-        self.changeMonth()
+        self.changeMonth(self.month, self.d)
 
     def changeMonth(self):
         dateInfo = DateInformation(currentMonth())
@@ -309,6 +325,7 @@ class Application(Frame):
         self.d.pack(pady=30)
         self.update()
 
+
 #########################################################
 ##CREATE EVENT MODAL                                    #
 #########################################################
@@ -320,6 +337,7 @@ class Event(tk.Frame):
 
     def CreateEvent(self):
         self.toplevel = Toplevel()
+        self.toplevel.geometry('400x400')
         summary = Label(self.toplevel, text='Title')
         summary.grid(row=0, column=0)
         self.summaryEntry = Entry(self.toplevel)
@@ -367,23 +385,56 @@ class Event(tk.Frame):
         submit.grid(row=6, column=0)
         
     def on_submit(self):
-        AddToCalendar(self)
+        data = GrapFromEvent(self)
+        AddToCalendar(data)
+        AddToGoogleCalendar(data)
         self.toplevel.destroy()
+        app.changeMonth()
 
+def StringDateToGoogleDate(date,starts,ends):
+    SDate = date.split('-')
+    SStarts = starts.split(':')
+    SEnds = ends.split(':')
+    startDateTime = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]),int(SStarts[0]),int(SStarts[1])).isoformat() + 'Z'
+    endDateTime = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]),int(SEnds[0]),int(SEnds[1])).isoformat() + 'Z'
+    return ([startDateTime,endDateTime])
 
-def AddToCalendar(CreateEventData):
+def GrapFromEvent(CreateEventData):
     Title = CreateEventData.summaryEntry.get()
     Description = CreateEventData.descriptionEntry.get('1.0',END)
-    
     Date = CreateEventData.dayEntry.get()
-    SDate = Date.split('-')
-    DateTimeDate = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]))
-
     Starts = CreateEventData.starttimeEntry.get()
     Ends = CreateEventData.enddtimeEntry.get()
     AllDay = CreateEventData.y.get()
-    insertIntoDB(Title, Description, DateTimeDate, Starts, Ends, AllDay)
-    print(Title,Description,Date,Starts,Ends,DateTimeDate,AllDay)
+    return ([Title,Description,Date,Starts,Ends,AllDay])
+
+    
+def AddToCalendar(data):
+    Date = data[2]
+    SDate = Date.split('-')
+    DateTimeDate = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]))
+    insertIntoDB(data[0], data[1], DateTimeDate, data[3], data[4], data[5])
+
+def AddToGoogleCalendar(data):
+    #G = Gservice
+    dateDate = StringDateToGoogleDate(data[2],data[3],data[4])
+    event = {
+      'summary': data[0],
+      'description': data[1],
+      'start': {
+        'dateTime': dateDate[0],
+        'timeZone': 'Atlantic/Reykjavik',
+      },
+      'end': {
+        'dateTime': dateDate[1],
+        'timeZone': 'Atlantic/Reykjavik',
+      'reminders': {
+        'useDefault': True, },
+      },
+    }
+    event = Gservice.events().insert(calendarId='primary', body=event).execute()
+    print ('Event created: %s' % (event.get('htmlLink')))
+    return 0
 
 ##VIEW SINGLE DAY ON CALENDAR
 #-----##TODO##
@@ -416,10 +467,11 @@ x = datetime.datetime(2016,12,13)
 x = datetime.datetime(2016,12,17)
 #insertIntoDB('BYE', 'THAR', x, '14:00', '18:00', 'False')
 #currentMonth(0,1,2)
-GoogleEvents = gapi.GenerateList(gapi.Get12MonthEvents())
+Gservice = gapi.GetCredentials()
+GoogleEvents = gapi.GenerateList(gapi.Get12MonthEvents(Gservice))
 root = tk.Tk()
 app = Application(root)
-app.parent.geometry('603x550')
+app.parent.geometry('603x570')
 app.parent.resizable(0,0)
 app.mainloop()
 closeConnection()
