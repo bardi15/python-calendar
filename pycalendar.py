@@ -28,7 +28,7 @@ currMonth = [0]
 ##stat = True
 
 # breytan sem thu setur inn i returnID fallid til ad testa
-##t = '2016-12-18'
+t = '2016-12-16'
 
 # insertIntoDB(summ, desc, days, stim, etim, stat)
 
@@ -60,6 +60,12 @@ def returnID(day):
         idList.append(row)
     
     return idList
+
+def returnAllFromID(ID):
+    result = cursor.execute('SELECT * FROM cal WHERE ID = ?', (ID, ))
+    p = list(cursor)
+    
+    return p
 
 def returnAll():
     idList = []
