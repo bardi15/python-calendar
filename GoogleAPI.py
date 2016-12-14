@@ -7,11 +7,12 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
-
+from collections import defaultdict
 from calendar import monthrange
 import datetime
 import dateutil.parser
 from datetime import date,timedelta
+from dateutil.relativedelta import relativedelta
 
 try:
     import argparse
@@ -83,6 +84,22 @@ def GetEvents(year,month):
     eventsResult = service.events().list(
         calendarId='primary', timeMin=now[0], timeMax=now[1], maxResults=2500, singleEvents=True,
         orderBy='startTime').execute()
+    return eventsResult
+
+def Get12MonthEvents():
+    firstdayofCurrMonth = date.today().replace(day=1)
+    MonthBegin = firstdayofCurrMonth + relativedelta(months=- 12)
+    YEAR = MonthBegin.year
+    MONTH = MonthBegin.month
+    DATE = datetime.datetime(YEAR,1,1).isoformat() + 'Z'
+    service = GetCredentials()
+    eventsResult = service.events().list(
+        calendarId='primary', timeMin=DATE, maxResults=2500, singleEvents=True,
+        orderBy='startTime').execute()
+    return eventsResult
+
+def GenerateList(eventsResult):
+    MonthDicts = defaultdict(list)
     lis = []
     for i in eventsResult['items']:
         _summary = i['summary']
@@ -111,6 +128,10 @@ def GetEvents(year,month):
         event['starttime'] = _dt1
         event['endtime'] = _dt2
         event['allday'] = _allDay
-        lis.append(event) 
-    return lis 
-        
+        MONTH = _dt1.month
+        YEAR = _dt1.year
+        MonthDicts[(YEAR,MONTH)].append(event)
+        lis.append(event)
+    return MonthDicts 
+
+

@@ -7,8 +7,9 @@ import time
 import calendar as C
 import sqlite3
 from dateutil.parser import parse
-import GoogleAPI
 from pprint import pprint
+import GoogleAPI as gapi
+GoogleEvents = []
 
 ##GLOBAL VARIABLES
 _RECTANGLESIZE = 5
@@ -20,15 +21,6 @@ currMonth = [0]
 #########################################################
 ##DATABASE CONNECTION                                   #
 #########################################################
-
-
-########  Test data  ########
-##summ = 'Boliti'
-##desc = 'alltaf i boltanum'
-##days = '2016-12-18'
-##stim = '12:00'
-##etim = '10:00'
-##stat = True
 
 # breytan sem thu setur inn i returnID fallid til ad testa
 t = '2016-12-16'
@@ -121,13 +113,11 @@ def Week():
     return l
 
 def LastMonth(offset):
-    #print(offset)
     firstdayofCurrMonth = date.today().replace(day=1)
     MonthOffset = firstdayofCurrMonth + relativedelta(months=+ offset)
     return MonthOffset
     
 def DateInformation(offset):
-    #print(offset)
     today = LastMonth(offset)
     month = today.month
     weekday = today.weekday()
@@ -143,8 +133,8 @@ def DateInformation(offset):
     return dict
 
 def GoogleMonth(year,month):
-    #print(year,month)
-    return GoogleAPI.GetEvents(year,month)
+    GE = GoogleEvents[year,month]
+    return GE
 
 def AllFromGoogleMonthDay(gglMonth,day):
     lis = []
@@ -154,12 +144,10 @@ def AllFromGoogleMonthDay(gglMonth,day):
             Date = Stime.date()
             TY = Stime.hour
             TZ = Stime.minute
-            #strtTime = datetime.time(TY, TZ)
             strtTime = str(TY).zfill(2) + ':' + str(TZ).zfill(2)
             Etime = i['endtime']
             UY = Etime.hour
             UZ = Etime.minute
-            #endTime = datetime.time(UY,UZ)
             endTime = str(UY).zfill(2) + ':' + str(UZ).zfill(2)
             summary = i['summary']
             description = i['description']
@@ -172,12 +160,9 @@ def SuperList(SQLLIST,GLGLIST):
     for i in SQLLIST:
         TIMED = datetime.datetime.strptime(i[3], '%Y-%m-%d %H:%M:%S').date()
         k = [i[0],i[1],i[2],TIMED,i[4],i[5],i[6]]
-        #print(k)
         megalist.append(k)
     for y in GLGLIST:
-        #dTime = datetime.combine(y[3], datetime.min.time())
         g = [y[0],y[1],y[2],y[3],y[4],y[5],y[6]]
-        #print(g)
         megalist.append(g)
 
     megalist.sort(key=lambda item:item[4], reverse=True)
@@ -191,7 +176,6 @@ def CreateMonthDict(MONTH):
     MDict = {}
     for i in range (D['DaysInMonth']):
         day = i
-        #AllFromGoogleMonthDay(GM,i+1)
         starting = (day + D['FirstDayOfMonth'])
         Y = int(starting % D['DaysInWeek'])
         X = int(starting / D['DaysInWeek'])
@@ -199,14 +183,6 @@ def CreateMonthDict(MONTH):
         ThisDayEvents = returnAllFromDay(ThisDate)
         ALG = AllFromGoogleMonthDay(GM,i+1)
         superList = SuperList(ThisDayEvents, ALG)
-####        for i in range(len(superList)):
-####            print(str(i) , '  : ', superList[i])
-##        #print(superList)
-##        if (len(ThisDayEvents) > 99 and len(ALG) > 0):
-##            print('ThisDayEvents\n')
-##            print(ThisDayEvents)
-##            print('\n\nAllFromGoogleMonthDay')
-##            print(AllFromGoogleMonthDay(GM,i+1))
         MDict[day+1] = [X,Y,ThisDate,superList]
     return MDict
 
@@ -412,10 +388,6 @@ def AddToCalendar(CreateEventData):
 #########################################################
 ##START                                                 #
 #########################################################
-# root = tk.Tk()
-# app = Application(master=root)
-# app.mainloop()
-
 
 ##TEST DATA FOR SQL
 createTable()
@@ -430,7 +402,7 @@ x = datetime.datetime(2016,12,13)
 x = datetime.datetime(2016,12,17)
 #insertIntoDB('BYE', 'THAR', x, '14:00', '18:00', 'False')
 #currentMonth(0,1,2)
-
+GoogleEvents = gapi.GenerateList(gapi.Get12MonthEvents())
 root = tk.Tk()
 app = Application(root)
 app.parent.geometry('603x550')
