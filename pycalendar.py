@@ -8,13 +8,14 @@ import calendar as C
 import sqlite3
 from dateutil.parser import parse
 import GoogleAPI
+from pprint import pprint
 
 ##GLOBAL VARIABLES
 _RECTANGLESIZE = 5
 _RCTHEIGHT = 50
 _RCTWIDTH = 80
 _APPWIDTH = 603
-currMonth = [-1]
+currMonth = [0]
 
 #########################################################
 ##DATABASE CONNECTION                                   #
@@ -218,6 +219,10 @@ class Calender(tk.Frame):
         self.pack()
         self.Weekdays()
         self.Days()
+
+    def CreateEvent(self, event):
+        self.toplevel = Toplevel()
+        test = event.widget.interesting
         
     def Weekdays(self):
         TF = Frame(self)
@@ -229,6 +234,8 @@ class Calender(tk.Frame):
             box.grid(row=0,column=i)
             canvas_id = box.create_text(10, 10, anchor="nw")
             box.insert(canvas_id, 25, Weekdays[i])
+
+
             
     def Days(self):
         TX = Frame(self)
@@ -243,7 +250,6 @@ class Calender(tk.Frame):
             DATE = value[2]
             DAYEVENTS = value[3]
             ALLDAY = False
-
             ##CHECKS IF ALL DAY:
             for i in DAYEVENTS:
                 if i[6] == 1:
@@ -257,8 +263,9 @@ class Calender(tk.Frame):
                 day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='white') 
             day.grid(row=X, column=Y)
             text = day.create_text(10, 10, anchor="nw")
+            day.interesting = DAYEVENTS
             day.insert(text, 25, str(DAY))
-
+            day.bind('<Double-Button-1>', self.CreateEvent)
 
 #########################################################
 ##APPLICATION FRAMEWORK                                 #
@@ -291,7 +298,7 @@ class Application(Frame):
         self.addEvent.pack(side=BOTTOM)
 
     def prevMonth(self):
-        print(currentMonth(-1))
+        currentMonth(-1)
         self.changeMonth()
 
     def nextMonth(self):
