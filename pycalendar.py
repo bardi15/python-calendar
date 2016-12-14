@@ -257,57 +257,56 @@ class Event(tk.Frame):
         self.CreateEvent()
 
     def CreateEvent(self):
-        toplevel = Toplevel()
-        summary = Label(toplevel, text='Title')
+        self.toplevel = Toplevel()
+        summary = Label(self.toplevel, text='Title')
         summary.grid(row=0, column=0)
-        self.summaryEntry = Entry(toplevel)
+        self.summaryEntry = Entry(self.toplevel)
         self.summaryEntry.grid(row=0, column=1)
         
-        description = Label(toplevel, text='Description')
+        description = Label(self.toplevel, text='Description')
         description.grid(row=1, column=0)
-        self.descriptionEntry = Text(toplevel, height=2, width=15)
+        self.descriptionEntry = Text(self.toplevel, height=2, width=15)
         self.descriptionEntry.grid(row=1, column=1)
 
         v = StringVar()
-        day = Label(toplevel, text='Date')
+        day = Label(self.toplevel, text='Date')
         day.grid(row=2, column=0)
-        self.dayEntry = Entry(toplevel, textvariable=v)
+        self.dayEntry = Entry(self.toplevel, textvariable=v)
         self.dayEntry.grid(row=2, column=1)
         v.set(str(date.today()))
 
         DD = datetime.datetime.now()
         w = StringVar()
-        starttime = Label(toplevel, text='Starts')
+        starttime = Label(self.toplevel, text='Starts')
         starttime.grid(row=3, column=0)
-        self.starttimeEntry = Entry(toplevel,textvariable=w)
+        self.starttimeEntry = Entry(self.toplevel,textvariable=w)
         self.starttimeEntry.grid(row=3, column=1)
         w.set(str(DD.hour) + ':' + str(DD.minute))
 
 
         D2 = DD + datetime.timedelta(hours=1)
         x = StringVar()
-        enddtime = Label(toplevel, text='Ends')
+        enddtime = Label(self.toplevel, text='Ends')
         enddtime.grid(row=4, column=0)
-        self.enddtimeEntry = Entry(toplevel, textvariable=x)
+        self.enddtimeEntry = Entry(self.toplevel, textvariable=x)
         self.enddtimeEntry.grid(row=4, column=1)
         x.set(str(D2.hour) + ':' + str(D2.minute))
 
-        allday = Label(toplevel, text='All Day?')
+        allday = Label(self.toplevel, text='All Day?')
         allday.grid(row=5, column=0)
         self.y = tk.IntVar()
-        self.alldayEntry = tk.Checkbutton(toplevel,text="", variable=self.y)
+        self.alldayEntry = tk.Checkbutton(self.toplevel,text="", variable=self.y)
         self.alldayEntry.grid(row=5, column=1)
 
-        dax = Label(toplevel, text='')
+        dax = Label(self.toplevel, text='')
         dax.grid(row=6, column=1)
         
-        submit = Button(toplevel, text ="Submit", command=self.on_submit)
+        submit = Button(self.toplevel, text ="Submit", command=self.on_submit)
         submit.grid(row=6, column=0)
         
     def on_submit(self):
         AddToCalendar(self)
-        #self.destroy()
-        #print(self.summaryEntry.get())
+        self.toplevel.destroy()
 
 
 def AddToCalendar(CreateEventData):
