@@ -53,7 +53,7 @@ def insertIntoDB(summary, description, days, starttime, endtime, allday):
     connection.commit()
 
 #skilar lista af ID sem er == og day parameter
-def returnID(day):
+def returnAllFromDay(day):
     idList = []
     result = cursor.execute('SELECT * FROM cal WHERE day = ?', (day, ))
 
@@ -150,7 +150,7 @@ def CreateMonthDict(MONTH):
         Y = int(starting % D['DaysInWeek'])
         X = int(starting / D['DaysInWeek'])
         ThisDate = datetime.datetime(D['Year'], D['NumberOfCurrentMonth'], day+1)
-        ThisDayEvents = returnID(ThisDate)
+        ThisDayEvents = returnAllFromDay(ThisDate)
         MDict[day+1] = [X,Y,ThisDate,ThisDayEvents]
     return MDict
 
