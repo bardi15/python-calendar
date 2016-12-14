@@ -14,10 +14,17 @@ _RCTWIDTH = 80
 _APPWIDTH = 603
 currMonth = [0]
 
-def currentMonth(offset):
-    currMonth[0] += offset
 
-    return currMonth[0]
+def currentMonth(A = None,B = None,C = None):
+    if A is None and B is None and C is None:
+        return currMonth[0]
+    elif B is None and C is None:
+        currMonth[0] += A
+        return currMonth[0]
+    elif C is None:
+        raise ValueError('MISSING DAY PARAMETER')
+    else:
+        print(A, B,C)
 
 #########################################################
 ##DATABASE CONNECTION                                   #
@@ -103,11 +110,13 @@ def Week():
     return l
 
 def LastMonth(offset):
+    print(offset)
     firstdayofCurrMonth = date.today().replace(day=1)
     MonthOffset = firstdayofCurrMonth + relativedelta(months=+ offset)
     return MonthOffset
     
 def DateInformation(offset):
+    print(offset)
     today = LastMonth(offset)
     month = today.month
     weekday = today.weekday()
@@ -160,8 +169,8 @@ class Calender(tk.Frame):
     def Days(self):
         TX = Frame(master=None)
         TX.pack()
-        CurrentM = DateInformation(currentMonth(0))
-        CMonth= CreateMonthDict(currentMonth(0))
+        CurrentM = DateInformation(currentMonth())
+        CMonth= CreateMonthDict(currentMonth())
 
         for key,value in CMonth.items():
             DAY = key
@@ -191,7 +200,7 @@ class Application(Frame):
         self.initUI()
         
     def initUI(self):
-        currMonth = DateInformation(currentMonth(0))
+        currMonth = DateInformation(currentMonth())
         curr = currMonth['NameOfCurrMonth']
 
         ##TOP FRAME
@@ -295,6 +304,10 @@ class Event(tk.Frame):
 
 ##TEST DATA FOR SQL
 createTable()
+
+x = datetime.datetime(2016,11,13)
+insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
+
 x = datetime.datetime(2016,12,13)
 insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
 
