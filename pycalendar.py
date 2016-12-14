@@ -7,13 +7,14 @@ import time
 import calendar as C
 import sqlite3
 from dateutil.parser import parse
+import GoogleAPI
 
 ##GLOBAL VARIABLES
 _RECTANGLESIZE = 5
 _RCTHEIGHT = 50
 _RCTWIDTH = 80
 _APPWIDTH = 603
-currMonth = [0]
+currMonth = [-1]
 
 #########################################################
 ##DATABASE CONNECTION                                   #
@@ -140,18 +141,72 @@ def DateInformation(offset):
     dict['NumberOfCurrentMonth'] = month
     return dict
 
+def GoogleMonth(year,month):
+    #print(year,month)
+    return GoogleAPI.GetEvents(year,month)
+
+def AllFromGoogleMonthDay(gglMonth,day):
+    lis = []
+    for i in gglMonth:
+        Stime = i['starttime']
+        if Stime.day == day:
+            Date = Stime.date()
+            TY = Stime.hour
+            TZ = Stime.minute
+            #strtTime = datetime.time(TY, TZ)
+            strtTime = str(TY).zfill(2) + ':' + str(TZ).zfill(2)
+            Etime = i['endtime']
+            UY = Etime.hour
+            UZ = Etime.minute
+            #endTime = datetime.time(UY,UZ)
+            endTime = str(UY).zfill(2) + ':' + str(UZ).zfill(2)
+            summary = i['summary']
+            description = i['description']
+            allday = i['allday']
+            lis.append(['GLG',summary, description, Date, strtTime, endTime, allday])
+    return lis
+
+def SuperList(SQLLIST,GLGLIST):
+    megalist = []
+    for i in SQLLIST:
+        TIMED = datetime.datetime.strptime(i[3], '%Y-%m-%d %H:%M:%S').date()
+        k = [i[0],i[1],i[2],TIMED,i[4],i[5],i[6]]
+        #print(k)
+        megalist.append(k)
+    for y in GLGLIST:
+        #dTime = datetime.combine(y[3], datetime.min.time())
+        g = [y[0],y[1],y[2],y[3],y[4],y[5],y[6]]
+        #print(g)
+        megalist.append(g)
+
+    megalist.sort(key=lambda item:item[4], reverse=True)
+    return megalist
+
 def CreateMonthDict(MONTH):
     D = DateInformation(MONTH)
+    GM = GoogleMonth(D['Year'],D['NumberOfCurrentMonth'])
+    
     Location = []
     MDict = {}
     for i in range (D['DaysInMonth']):
         day = i
+        #AllFromGoogleMonthDay(GM,i+1)
         starting = (day + D['FirstDayOfMonth'])
         Y = int(starting % D['DaysInWeek'])
         X = int(starting / D['DaysInWeek'])
         ThisDate = datetime.datetime(D['Year'], D['NumberOfCurrentMonth'], day+1)
         ThisDayEvents = returnAllFromDay(ThisDate)
-        MDict[day+1] = [X,Y,ThisDate,ThisDayEvents]
+        ALG = AllFromGoogleMonthDay(GM,i+1)
+        superList = SuperList(ThisDayEvents, ALG)
+####        for i in range(len(superList)):
+####            print(str(i) , '  : ', superList[i])
+##        #print(superList)
+##        if (len(ThisDayEvents) > 99 and len(ALG) > 0):
+##            print('ThisDayEvents\n')
+##            print(ThisDayEvents)
+##            print('\n\nAllFromGoogleMonthDay')
+##            print(AllFromGoogleMonthDay(GM,i+1))
+        MDict[day+1] = [X,Y,ThisDate,superList]
     return MDict
 
 #########################################################
