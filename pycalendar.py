@@ -199,6 +199,7 @@ class Calender(tk.Frame):
     def CreateEvent(self, event):
         self.toplevel = Toplevel()
         test = event.widget.interesting
+        print(test)
         
     def Weekdays(self):
         TF = Frame(self)
@@ -353,23 +354,55 @@ class Event(tk.Frame):
         submit.grid(row=6, column=0)
         
     def on_submit(self):
-        AddToCalendar(self)
+        data = GrapFromEvent(self)
+        AddToCalendar(data)
+        AddToGoogleCalendar(data)
         self.toplevel.destroy()
 
+def StringDateToGoogleDate(date,starts,ends):
+    SDate = date.split('-')
+    SStarts = starts.split(':')
+    SEnds = ends.split(':')
+    startDateTime = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]),int(SStarts[0]),int(SStarts[1])).isoformat() + 'Z'
+    endDateTime = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]),int(SEnds[0]),int(SEnds[1])).isoformat() + 'Z'
+    return ([startDateTime,endDateTime])
 
-def AddToCalendar(CreateEventData):
+def GrapFromEvent(CreateEventData):
     Title = CreateEventData.summaryEntry.get()
     Description = CreateEventData.descriptionEntry.get('1.0',END)
-    
     Date = CreateEventData.dayEntry.get()
-    SDate = Date.split('-')
-    DateTimeDate = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]))
-
     Starts = CreateEventData.starttimeEntry.get()
     Ends = CreateEventData.enddtimeEntry.get()
     AllDay = CreateEventData.y.get()
-    insertIntoDB(Title, Description, DateTimeDate, Starts, Ends, AllDay)
-    print(Title,Description,Date,Starts,Ends,DateTimeDate,AllDay)
+    return ([Title,Description,Date,Starts,Ends,AllDay])
+
+    
+def AddToCalendar(data):
+    Date = data[2]
+    SDate = Date.split('-')
+    DateTimeDate = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]))
+    insertIntoDB(data[0], data[1], DateTimeDate, data[3], data[4], data[5])
+
+def AddToGoogleCalendar(data):
+    #G = Gservice
+    dateDate = StringDateToGoogleDate(data[2],data[3],data[4])
+    event = {
+      'summary': data[0],
+      'description': data[1],
+      'start': {
+        'dateTime': dateDate[0],
+        'timeZone': 'Atlantic/Reykjavik',
+      },
+      'end': {
+        'dateTime': dateDate[1],
+        'timeZone': 'Atlantic/Reykjavik',
+      'reminders': {
+        'useDefault': True, },
+      },
+    }
+    event = Gservice.events().insert(calendarId='primary', body=event).execute()
+    print ('Event created: %s' % (event.get('htmlLink')))
+    return 0
 
 ##VIEW SINGLE DAY ON CALENDAR
 #-----##TODO##
@@ -402,7 +435,8 @@ x = datetime.datetime(2016,12,13)
 x = datetime.datetime(2016,12,17)
 #insertIntoDB('BYE', 'THAR', x, '14:00', '18:00', 'False')
 #currentMonth(0,1,2)
-GoogleEvents = gapi.GenerateList(gapi.Get12MonthEvents())
+Gservice = gapi.GetCredentials()
+GoogleEvents = gapi.GenerateList(gapi.Get12MonthEvents(Gservice))
 root = tk.Tk()
 app = Application(root)
 app.parent.geometry('603x550')
