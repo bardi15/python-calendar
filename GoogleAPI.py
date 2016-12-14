@@ -22,7 +22,7 @@ except ImportError:
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
+SCOPES = 'https://www.googleapis.com/auth/calendar'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
@@ -78,21 +78,21 @@ def getStartAndEndOfMonth(year,month):
     print(startM,endM)
     return [startM,endM]
 
-def GetEvents(year,month):
+def GetEvents(year,month,service):
     now = getStartAndEndOfMonth(year,month)
-    service = GetCredentials()
+    #service = GetCredentials()
     eventsResult = service.events().list(
         calendarId='primary', timeMin=now[0], timeMax=now[1], maxResults=2500, singleEvents=True,
         orderBy='startTime').execute()
     return eventsResult
 
-def Get12MonthEvents():
+def Get12MonthEvents(service):
     firstdayofCurrMonth = date.today().replace(day=1)
     MonthBegin = firstdayofCurrMonth + relativedelta(months=- 12)
     YEAR = MonthBegin.year
     MONTH = MonthBegin.month
     DATE = datetime.datetime(YEAR,1,1).isoformat() + 'Z'
-    service = GetCredentials()
+    #service = GetCredentials()
     eventsResult = service.events().list(
         calendarId='primary', timeMin=DATE, maxResults=2500, singleEvents=True,
         orderBy='startTime').execute()
