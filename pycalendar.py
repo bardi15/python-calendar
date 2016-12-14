@@ -87,11 +87,11 @@ def closeConnection():
 ##BUTTON FUNCTIONS:                                     #
 #########################################################
 
-def prevMonth():
-    print(currentMonth(-1))
+# def prevMonth():
+#     print(currentMonth(-1))
 
-def nextMonth():
-    print(currentMonth(1))
+# def nextMonth():
+#     print(currentMonth(1))
 
 
 #########################################################
@@ -165,7 +165,7 @@ class Calender(tk.Frame):
         self.Days()
         
     def Weekdays(self):
-        TF = Frame(master=None)
+        TF = Frame(self)
         Weekdays = Week()
         TF.pack()
         for i in range(len(Weekdays)):
@@ -176,7 +176,7 @@ class Calender(tk.Frame):
             box.insert(canvas_id, 25, Weekdays[i])
             
     def Days(self):
-        TX = Frame(master=None)
+        TX = Frame(self)
         TX.pack()
         CurrentM = DateInformation(currentMonth())
         CMonth= CreateMonthDict(currentMonth())
@@ -195,14 +195,11 @@ class Calender(tk.Frame):
                     ALLDAY = True
 
             if ALLDAY:
-                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT,
-                                bg='blue')                
+                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='blue')                
             elif len(DAYEVENTS) > 0:
-                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT,
-                                bg='brown')
+                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='brown')
             else:
-                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT,
-                                bg='white') 
+                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='white') 
             day.grid(row=X, column=Y)
             text = day.create_text(10, 10, anchor="nw")
             day.insert(text, 25, str(DAY))
@@ -218,34 +215,47 @@ class Application(Frame):
         self.initUI()
         
     def initUI(self):
-        currMonth = DateInformation(currentMonth())
-        curr = currMonth['NameOfCurrMonth']
 
-        ##TOP FRAME
-        self.top = Frame(self.parent, bg='',width=603, height=50)
-        self.top.pack(fill='both',expand=True)
-        CurrentMonth = Label(self.top, text=curr)
-        CurrentMonth.pack(side=LEFT)
-        CurrentMonth.config(font=("mincho", 40))
+        dateInfo = DateInformation(currentMonth())
+        currMonth = dateInfo['NameOfCurrMonth']
+        currYear = dateInfo['Year']
+        dateSpec = currMonth + ' ' + str(currYear)
 
-        self.middle = Frame(self.parent,bg='green', width=603, height=200)
-        self.middle.pack(expand=False)
+        self.month = Label(self.parent, text=dateSpec, font='mincho, 40')
+        self.month.pack(side=TOP)
 
-        ##MIDDLE FRAME
-        d = Calender(self.middle)
-        d.pack()
+        self.d = Calender(self.parent)
+        self.d.pack()
 
-        ##BOTTOM FRAME        
-        self.bottom = Frame(self.parent, bg='', width=603, height=50)
-        self.bottom.pack(expand=False)
-        self.prev = Button(self.bottom, text='Previous', command=prevMonth)
-        self.prev.pack(side=LEFT, padx=5, pady=5)
-        self.next = Button(self.bottom, text='Next', command=nextMonth)
-        self.next.pack(side=RIGHT,padx=5, pady=5)
         
-        self.nextx = Button(self.bottom, text='Add Event', command=Event)
-        self.nextx.pack(side=RIGHT,padx=5, pady=5)
+        self.prev = Button(self.parent, text='Previous', command=self.prevMonth)
+        self.prev.pack(side=BOTTOM)
+        self.next = Button(self.parent, text='Next', command=self.nextMonth)
+        self.next.pack(side=BOTTOM)
+        self.addEvent = Button(self.parent, text='Add Event', command=Event)
+        self.addEvent.pack(side=BOTTOM)
 
+    def prevMonth(self):
+        print(currentMonth(-1))
+        self.changeMonth()
+
+    def nextMonth(self):
+        currentMonth(1)
+        self.changeMonth()
+
+    def changeMonth(self):
+        dateInfo = DateInformation(currentMonth())
+        currMonth = dateInfo['NameOfCurrMonth']
+        currYear = dateInfo['Year']
+        dateSpec = currMonth + ' ' + str(currYear)
+
+        self.month.destroy()
+        self.month = Label(self.parent, text=dateSpec, font='mincho, 40')
+        self.month.pack(side=TOP)
+        self.d.destroy()
+        self.d = Calender(self.parent)
+        self.d.pack()
+        self.update()
 
 #########################################################
 ##CREATE EVENT MODAL                                    #
@@ -361,7 +371,7 @@ x = datetime.datetime(2016,12,17)
 
 root = tk.Tk()
 app = Application(root)
-app.parent.geometry('603x450')
+app.parent.geometry('603x550')
 app.parent.resizable(0,0)
 app.mainloop()
 closeConnection()
