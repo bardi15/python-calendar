@@ -14,18 +14,6 @@ _RCTWIDTH = 80
 _APPWIDTH = 603
 currMonth = [0]
 
-
-def currentMonth(A = None,B = None,C = None):
-    if A is None and B is None and C is None:
-        return currMonth[0]
-    elif B is None and C is None:
-        currMonth[0] += A
-        return currMonth[0]
-    elif C is None:
-        raise ValueError('MISSING DAY PARAMETER')
-    else:
-        print(A, B,C)
-
 #########################################################
 ##DATABASE CONNECTION                                   #
 #########################################################
@@ -103,6 +91,20 @@ def nextMonth():
 ##CALENDER FUNCTIONS                                    #
 #########################################################
 
+def currentMonth(A = None,B = None,C = None):
+    if A is None and B is None and C is None:
+        return currMonth[0]
+    elif B is None and C is None:
+        currMonth[0] += A
+        return currMonth[0]
+    elif C is None:
+        raise ValueError('MISSING DAY PARAMETER')
+    ##YEAR MONTH DAY
+    else:
+        print(A, B,C)
+        #x = datetime.datetime(A,B,C)
+        print(LastMonth(0))
+
 def Week():
     l = []
     for i in range(7):
@@ -110,13 +112,13 @@ def Week():
     return l
 
 def LastMonth(offset):
-    print(offset)
+    #print(offset)
     firstdayofCurrMonth = date.today().replace(day=1)
     MonthOffset = firstdayofCurrMonth + relativedelta(months=+ offset)
     return MonthOffset
     
 def DateInformation(offset):
-    print(offset)
+    #print(offset)
     today = LastMonth(offset)
     month = today.month
     weekday = today.weekday()
@@ -242,43 +244,64 @@ class Event(tk.Frame):
         toplevel = Toplevel()
         summary = Label(toplevel, text='Title')
         summary.grid(row=0, column=0)
-        summaryEntry = Entry(toplevel)
-        summaryEntry.grid(row=0, column=1)
+        self.summaryEntry = Entry(toplevel)
+        self.summaryEntry.grid(row=0, column=1)
         
         description = Label(toplevel, text='Description')
         description.grid(row=1, column=0)
-        descriptionEntry = Text(toplevel, height=2, width=15)
-        descriptionEntry.grid(row=1, column=1)
+        self.descriptionEntry = Text(toplevel, height=2, width=15)
+        self.descriptionEntry.grid(row=1, column=1)
 
+        v = StringVar()
         day = Label(toplevel, text='Date')
         day.grid(row=2, column=0)
-        dayEntry = Entry(toplevel)
-        dayEntry.grid(row=2, column=1)
+        self.dayEntry = Entry(toplevel, textvariable=v)
+        self.dayEntry.grid(row=2, column=1)
+        v.set(str(date.today()))
 
+        DD = datetime.datetime.now()
+        w = StringVar()
         starttime = Label(toplevel, text='Starts')
         starttime.grid(row=3, column=0)
-        starttimeEntry = Entry(toplevel)
-        starttimeEntry.grid(row=3, column=1)
+        self.starttimeEntry = Entry(toplevel,textvariable=w)
+        self.starttimeEntry.grid(row=3, column=1)
+        w.set(str(DD.hour) + ':' + str(DD.minute))
 
+
+        D2 = DD + datetime.timedelta(hours=1)
+        x = StringVar()
         enddtime = Label(toplevel, text='Ends')
         enddtime.grid(row=4, column=0)
-        enddtimeEntry = Entry(toplevel)
-        enddtimeEntry.grid(row=4, column=1)
+        self.enddtimeEntry = Entry(toplevel, textvariable=x)
+        self.enddtimeEntry.grid(row=4, column=1)
+        x.set(str(D2.hour) + ':' + str(D2.minute))
 
         allday = Label(toplevel, text='All Day?')
         allday.grid(row=5, column=0)
-        alldayEntry = tk.Checkbutton(toplevel,
+        self.alldayEntry = tk.Checkbutton(toplevel,
                                     text="")
-        alldayEntry.grid(row=5, column=1)
+        self.alldayEntry.grid(row=5, column=1)
 
         dax = Label(toplevel, text='')
         dax.grid(row=6, column=1)
-        DATACOLLECTED = [summaryEntry.get(),descriptionEntry.get('1.0',END),dayEntry,starttimeEntry,enddtimeEntry,alldayEntry]
         
-        submit = Button(toplevel, text ="Submit", command=lambda: self.on_submit(DATACOLLECTED))
+        submit = Button(toplevel, text ="Submit", command=self.on_submit)
         submit.grid(row=6, column=0)
-    def on_submit(self,p):
-        print(p)
+        
+    def on_submit(self):
+        AddToCalendar(self)
+        #self.destroy()
+        #print(self.summaryEntry.get())
+
+
+def AddToCalendar(CreateEventData):
+    Title = CreateEventData.summaryEntry.get()
+    Description = CreateEventData.descriptionEntry.get('1.0',END)
+    Date = CreateEventData.dayEntry.get()
+    Starts = CreateEventData.starttimeEntry.get()
+    Ends = CreateEventData.enddtimeEntry.get()
+    #AllDay = CreateEventData.alldayEntry.get()
+    print(Title,Description,Date,Starts,Ends)
 
 ##VIEW SINGLE DAY ON CALENDAR
 #-----##TODO##
@@ -303,7 +326,7 @@ class Event(tk.Frame):
 
 
 ##TEST DATA FOR SQL
-createTable()
+#createTable()
 
 x = datetime.datetime(2016,11,13)
 insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
@@ -313,6 +336,7 @@ insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
 
 x = datetime.datetime(2016,12,17)
 insertIntoDB('BYE', 'THAR', x, '14:00', '18:00', 'False')
+currentMonth(0,1,2)
 
 root = tk.Tk()
 app = Application(root)
