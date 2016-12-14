@@ -236,19 +236,29 @@ class Calender(tk.Frame):
             X = value[0]
             Y = value[1]
             DATE = value[2]
+            FrameColor = 'white'
+            #TODAY = False
             DAYEVENTS = value[3]
-            ALLDAY = False
+            if len(DAYEVENTS) > 0:
+                FrameColor = 'brown'
+            #ALLDAY = False
             ##CHECKS IF ALL DAY:
             for i in DAYEVENTS:
                 if i[6] == 1:
-                    ALLDAY = True
+                    #ALLDAY = True
+                    FrameColor = 'blue'
+            if DATE.date() == datetime.datetime.today().date():
+                #TODAY = True
+                FrameColor = 'green'
+                #print('TODAY')
 
-            if ALLDAY:
-                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='blue')                
-            elif len(DAYEVENTS) > 0:
-                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='brown')
-            else:
-                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='white') 
+            day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg=FrameColor)
+##            if ALLDAY:
+##                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='blue')                
+##            elif len(DAYEVENTS) > 0:
+##                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='brown')
+##            else:
+##                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='white') 
             day.grid(row=X, column=Y)
             text = day.create_text(10, 10, anchor="nw")
             day.interesting = DAYEVENTS
@@ -265,7 +275,6 @@ class Application(Frame):
         self.initUI()
         
     def initUI(self):
-
         dateInfo = DateInformation(currentMonth())
         currMonth = dateInfo['NameOfCurrMonth']
         currYear = dateInfo['Year']
