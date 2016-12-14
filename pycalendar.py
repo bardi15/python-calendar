@@ -5,12 +5,19 @@ from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
 import calendar as C
 import sqlite3
+from dateutil.parser import parse
 
 ##GLOBAL VARIABLES
 _RECTANGLESIZE = 5
 _RCTHEIGHT = 50
 _RCTWIDTH = 80
-_CURRENTMONTH = 0
+_APPWIDTH = 603
+currMonth = [0]
+
+def currentMonth(offset):
+    currMonth[0] += offset
+
+    return currMonth[0]
 
 #########################################################
 ##DATABASE CONNECTION                                   #
@@ -18,15 +25,15 @@ _CURRENTMONTH = 0
 
 
 ########  Test data  ########
-summ = 'Boliti'
-desc = 'alltaf i boltanum'
-days = '2016-12-18'
-stim = '12:00'
-etim = '10:00'
-stat = True
+##summ = 'Boliti'
+##desc = 'alltaf i boltanum'
+##days = '2016-12-18'
+##stim = '12:00'
+##etim = '10:00'
+##stat = True
 
 # breytan sem thu setur inn i returnID fallid til ad testa
-t = '2016-12-18'
+##t = '2016-12-18'
 
 # insertIntoDB(summ, desc, days, stim, etim, stat)
 
@@ -41,21 +48,31 @@ def createTable():
     try:
         cursor.execute('CREATE TABLE IF NOT EXISTS cal(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, summary VARCHAR(50), description VARCHAR(300), day DATE, starttime TIME, endtime TIME, allday BOOLEAN)')
         connection.commit()
-    except sqlite3.OperationalError:
+    except sqlite3.OperationalError: print('CAN NOT CREATE TABLE')
 
 # Insertar inn i tofluna 
 def insertIntoDB(summary, description, days, starttime, endtime, allday):
-    cursor.execute("INSERT INTO cal(summary, description, day, starttime, endtime, allday) VALUES(?, ?, ?, ?, ?, ?)", (summary, description, days, starttime, endtime, allday))
+    cursor.execute("INSERT INTO cal(summary, description, day, starttime, endtime, allday) VALUES(?, ?, ?, ?, ?, ?)",
+                   (summary, description, days, starttime, endtime, allday))
     connection.commit()
 
 #skilar lista af ID sem er == og day parameter
 def returnID(day):
     idList = []
-    result = cursor.execute('SELECT ID FROM cal WHERE day = ?', (day, ))
+    result = cursor.execute('SELECT * FROM cal WHERE day = ?', (day, ))
 
     for row in result:
-        idList.append(row[0])
+        idList.append(row)
     
+    return idList
+
+def returnAll():
+    idList = []
+    result = cursor.execute('SELECT * FROM cal', ())
+
+    for row in result:
+        idList.append(row)
+
     return idList
 
 #lokar connection og cursor.
@@ -69,12 +86,11 @@ def closeConnection():
 #########################################################
 
 def prevMonth():
-    _CURRENTMONTH -= 1
-    print(_CURRENTMONTH)
+    print(currentMonth(-1))
 
 def nextMonth():
-    _CURRENTMONTH += 1
-    print(_CURRENTMONTH)
+    print(currentMonth(1))
+
 
 #########################################################
 ##CALENDER FUNCTIONS                                    #
@@ -103,42 +119,32 @@ def DateInformation(offset):
     dict['FirstDayOfMonth'] = monthRange[0]
     dict['Year'] = today.year
     dict['DaysInWeek'] = 7
-    print(dict)
+    dict['NumberOfCurrentMonth'] = month
     return dict
 
 def CreateMonthDict(MONTH):
     D = DateInformation(MONTH)
     Location = []
     MDict = {}
-    print(D['DaysInMonth'])
     for i in range (D['DaysInMonth']):
         day = i
         starting = (day + D['FirstDayOfMonth'])
         Y = int(starting % D['DaysInWeek'])
         X = int(starting / D['DaysInWeek'])
-        MDict[day+1] = [X,Y]
+        ThisDate = datetime.datetime(D['Year'], D['NumberOfCurrentMonth'], day+1)
+        ThisDayEvents = returnID(ThisDate)
+        MDict[day+1] = [X,Y,ThisDate,ThisDayEvents]
     return MDict
 
 #########################################################
-##GUI CLASS:                                            #
+##CALANDER DAYS:                                        #
 #########################################################
 class Calender(tk.Frame):
     def __init__(self,master=None):
         super().__init__(master)
         self.pack()
-        # self.Month()
         self.Weekdays()
         self.Days()
-        
-        #self.CreateEvent(4)
-    # def Month(self):
-    #     TM = Frame(master=None)
-    #     TM.pack()
-    #     CurrMonth = DateInformation(_CURRENTMONTH)['NameOfCurrMonth']
-    #     mon = tk.Canvas(TM, width=_RCTWIDTH*7, height=_RCTHEIGHT)
-    #     mon.grid(row=0,column=0)
-    #     text = mon.create_text(10, 10, anchor="nw")
-    #     mon.insert(text,25,CurrMonth)
         
     def Weekdays(self):
         TF = Frame(master=None)
@@ -154,60 +160,30 @@ class Calender(tk.Frame):
     def Days(self):
         TX = Frame(master=None)
         TX.pack()
-        CMonth= CreateMonthDict(_CURRENTMONTH)
+        CurrentM = DateInformation(currentMonth(0))
+        CMonth= CreateMonthDict(currentMonth(0))
 
         for key,value in CMonth.items():
             DAY = key
             X = value[0]
             Y = value[1]
-            day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT,
-                            bg='white')
+            DATE = value[2]
+            DAYEVENTS = value[3]
+            
+            if len(DAYEVENTS) > 0:
+                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT,
+                                bg='brown')
+            else:
+                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT,
+                                bg='white') 
             day.grid(row=X, column=Y)
             text = day.create_text(10, 10, anchor="nw")
             day.insert(text, 25, str(DAY))
 
-    def CreateEvent(self,date):
-        toplevel = Toplevel()
-        summary = Label(toplevel, text='Title')
-        summary.grid(row=0, column=0)
-        summaryEntry = Entry(toplevel)
-        summaryEntry.grid(row=0, column=1)
-        
-        description = Label(toplevel, text='Description')
-        description.grid(row=1, column=0)
-        description = Entry(toplevel)
-        description.grid(row=1, column=1)
 
-        day = Label(toplevel, text='Date')
-        day.grid(row=2, column=0)
-        day = Entry(toplevel)
-        day.grid(row=2, column=1)
-
-        starttime = Label(toplevel, text='Starts')
-        starttime.grid(row=3, column=0)
-        starttime = Entry(toplevel)
-        starttime.grid(row=3, column=1)
-
-        enddtime = Label(toplevel, text='Ends')
-        enddtime.grid(row=4, column=0)
-        enddtime = Entry(toplevel)
-        enddtime.grid(row=4, column=1)
-
-        allday = Label(toplevel, text='All Day?')
-        allday.grid(row=5, column=0)
-        allday = Entry(toplevel)
-        allday.grid(row=5, column=1)
-
-        p = 'hallo'
-        
-        dax = Label(toplevel, text=str(date))
-        dax.grid(row=6, column=1)
-        submit = Button(toplevel, text ="Submit", command=self.on_submit(p))
-        submit.grid(row=6, column=0)
-        
-    def on_submit(self,p):
-        print(p)
-
+#########################################################
+##APPLICATION FRAMEWORK                                 #
+#########################################################
 class Application(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
@@ -215,8 +191,10 @@ class Application(Frame):
         self.initUI()
         
     def initUI(self):
-        currMonth = DateInformation(_CURRENTMONTH)
+        currMonth = DateInformation(currentMonth(0))
         curr = currMonth['NameOfCurrMonth']
+
+        ##TOP FRAME
         self.top = Frame(self.parent, bg='',width=603, height=50)
         self.top.pack(fill='both',expand=True)
         CurrentMonth = Label(self.top, text=curr)
@@ -225,33 +203,73 @@ class Application(Frame):
 
         self.middle = Frame(self.parent,bg='green', width=603, height=200)
         self.middle.pack(expand=False)
+
+        ##MIDDLE FRAME
         d = Calender(self.middle)
         d.pack()
+
+        ##BOTTOM FRAME        
         self.bottom = Frame(self.parent, bg='', width=603, height=50)
         self.bottom.pack(expand=False)
         self.prev = Button(self.bottom, text='Previous', command=prevMonth)
         self.prev.pack(side=LEFT, padx=5, pady=5)
         self.next = Button(self.bottom, text='Next', command=nextMonth)
         self.next.pack(side=RIGHT,padx=5, pady=5)
-
-
-
-
         
+        self.nextx = Button(self.bottom, text='Add Event', command=Event)
+        self.nextx.pack(side=RIGHT,padx=5, pady=5)
 
 
+#########################################################
+##CREATE EVENT MODAL                                    #
+#########################################################
+class Event(tk.Frame):
+    def __init__(self,master=None):
+        super().__init__(master)
+        self.pack()
+        self.CreateEvent()
 
+    def CreateEvent(self):
+        toplevel = Toplevel()
+        summary = Label(toplevel, text='Title')
+        summary.grid(row=0, column=0)
+        summaryEntry = Entry(toplevel)
+        summaryEntry.grid(row=0, column=1)
+        
+        description = Label(toplevel, text='Description')
+        description.grid(row=1, column=0)
+        descriptionEntry = Text(toplevel, height=2, width=15)
+        descriptionEntry.grid(row=1, column=1)
 
+        day = Label(toplevel, text='Date')
+        day.grid(row=2, column=0)
+        dayEntry = Entry(toplevel)
+        dayEntry.grid(row=2, column=1)
 
+        starttime = Label(toplevel, text='Starts')
+        starttime.grid(row=3, column=0)
+        starttimeEntry = Entry(toplevel)
+        starttimeEntry.grid(row=3, column=1)
 
+        enddtime = Label(toplevel, text='Ends')
+        enddtime.grid(row=4, column=0)
+        enddtimeEntry = Entry(toplevel)
+        enddtimeEntry.grid(row=4, column=1)
 
-##ADD EVENTS TO CALENDAR
-#-----##TODO##
+        allday = Label(toplevel, text='All Day?')
+        allday.grid(row=5, column=0)
+        alldayEntry = tk.Checkbutton(toplevel,
+                                    text="")
+        alldayEntry.grid(row=5, column=1)
 
-
-##REMOVE EVENTS FROM CALENDAR
-#-----##TODO##
-
+        dax = Label(toplevel, text='')
+        dax.grid(row=6, column=1)
+        DATACOLLECTED = [summaryEntry.get(),descriptionEntry.get('1.0',END),dayEntry,starttimeEntry,enddtimeEntry,alldayEntry]
+        
+        submit = Button(toplevel, text ="Submit", command=lambda: self.on_submit(DATACOLLECTED))
+        submit.grid(row=6, column=0)
+    def on_submit(self,p):
+        print(p)
 
 ##VIEW SINGLE DAY ON CALENDAR
 #-----##TODO##
@@ -273,9 +291,18 @@ class Application(Frame):
 # root = tk.Tk()
 # app = Application(master=root)
 # app.mainloop()
+
+
+##TEST DATA FOR SQL
+createTable()
+x = datetime.datetime(2016,12,13)
+insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
+
+x = datetime.datetime(2016,12,17)
+insertIntoDB('BYE', 'THAR', x, '14:00', '18:00', 'False')
+
 root = tk.Tk()
 app = Application(root)
-
 app.parent.geometry('603x450')
 app.parent.resizable(0,0)
 app.mainloop()
