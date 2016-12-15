@@ -145,6 +145,16 @@ class Application(Frame):
         self.addEvent = Button(self.bottomFrame, text='Add Event', command= lambda: Event(cDate))
         self.addEvent.pack(side=LEFT)
 
+        self.cur = Button(self.bottomFrame, text = 'Current Month', command = self.currMonth)
+        self.cur.pack(side = LEFT)
+
+
+ 
+    def currMonth(self):
+        today = datetime.datetime.today()
+        CFUtil.currentMonth(today.year, today.month, today.day)
+        self.changeMonth()
+
     def prevMonth(self):
         CFUtil.currentMonth(-1)
         self.changeMonth()

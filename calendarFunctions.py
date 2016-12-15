@@ -25,6 +25,7 @@ class CalendarFunc:
         else:
             D = datetime.datetime(A,B,C)
             P = (D.year - self.today.year)*12 + D.month - self.today.month
+            self.currMonth[0] = 0
             self.currMonth[0] += P
             return self.currMonth[0]
 
