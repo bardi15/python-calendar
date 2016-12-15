@@ -37,23 +37,36 @@ class Calender(tk.Frame):
         self.buttonFrame = Frame(self.toplevel, height=30, width=400, bg='blue')
         self.buttonFrame.pack(side=BOTTOM, expand=False)
 
-        events = event.widget.interesting
+        self.events = event.widget.interesting
         date = str(event.widget.dates)[0:10]
         del dateIs[:]
         dateIs.append(date)
-        events = sorted(events, key=operator.attrgetter('strtTime'))
-        r = 2
-        if len(events) > 0:
-            for i in events:
-                theEvent = i.startTimeToString() +'-'+i.endTimeToString()+' - '+i.summary
-                self.event = Label(self.main, text=theEvent)
-                self.event.pack(anchor='nw', expand=False)
-                r+=2
+        self.events = sorted(self.events, key=operator.attrgetter('strtTime'))
+        #r = 2
+        if len(self.events) > 0:
+            for i in range(len(self.events)):
+                self.line = Frame(self.main,height=30, width=400)
+                self.line.pack(expand=True, anchor='nw')
+                theEvent = (self.events[i].startTimeToString() +'-'+
+                            self.events[i].endTimeToString()+' - '+
+                            self.events[i].summary)
+                self.event = Label(self.line, text=theEvent)
+                self.event.pack(side=LEFT, expand=True)
+                self.remove = Button(self.line, text="Remove", command =lambda i=i: self.Delete(i), bd=1, relief=SOLID )
+                self.remove.pack(side=RIGHT,expand=True)
+                #r+=2
         else:
             self.noEvent = Label(self.main, text='There are no events for this day')
             self.noEvent.pack(side=TOP)
         self.addEvent = Button(self.buttonFrame, text="Create New Event", command = lambda: Event(dateIs[0]), bd=1, relief=SOLID)
         self.addEvent.pack(side=LEFT)
+
+    def Delete(self,i):
+        event = self.events[i]
+        CFUtil.DeleteFromCalendar(event.idNum,event.GoogleAccount)
+        CFUtil.RefreshMonth(event, True)
+        self.toplevel.destroy()
+        app.changeMonth()
         
     def Weekdays(self):
         TF = Frame(self)
@@ -70,7 +83,7 @@ class Calender(tk.Frame):
         TX = Frame(self)
         TX.pack()
         CurrentM = CFUtil.DateInformation()
-        CMonth= CFUtil.CreateMonthDict(dBConn)
+        CMonth= CFUtil.CreateMonthDict()
 
         for key,value in CMonth.items():
             DAY = key
@@ -219,12 +232,6 @@ class Event(tk.Frame):
         self.alldayEntry = tk.Checkbutton(self.bottomFrame, variable=self.y)
         self.alldayEntry.grid(row=6, column=1, sticky=W)
 
-##        google = Label(self.bottomFrame, text='Add To Google')
-##        google.grid(row=7, column=0, sticky=W)
-##        self.z = tk.IntVar()
-##        self.googleEntry = tk.Checkbutton(self.bottomFrame, variable=self.z)
-##        self.googleEntry.grid(row=7, column=1, sticky=W)
-
         dax = Label(self.bottomFrame, text='')
         dax.grid(row=7, column=0)
         
@@ -236,6 +243,7 @@ class Event(tk.Frame):
         CFUtil.AddToCalendar(data)
         CFUtil.AddToGoogleCalendar(data)
         self.toplevel.destroy()
+        CFUtil.RefreshMonth(data,False)
         app.changeMonth()
 
 

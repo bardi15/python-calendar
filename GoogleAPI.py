@@ -77,7 +77,6 @@ def getStartAndEndOfMonth(year,month):
     LDOM = Range[1]
     startM = datetime.datetime(year,month,1).isoformat() + 'Z'
     endM = datetime.datetime(year,month,LDOM).isoformat() + 'Z'
-    print(startM,endM)
     return [startM,endM]
 
 def GetEvents(year,month,service):
@@ -126,4 +125,8 @@ def GenerateList(eventsResult):
         MONTH = event.Date.month
         YEAR = event.Date.year
         MonthDicts[(YEAR,MONTH)].append(event)
-    return MonthDicts 
+    return MonthDicts
+
+def DeleteGoogleCalendarEvent(service,idNum):
+    service.events().delete(calendarId='primary', eventId=idNum).execute()
+    print('deleted from google calendar')

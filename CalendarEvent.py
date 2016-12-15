@@ -80,6 +80,9 @@ class CalendarEvent:
     
     def GetGoogleEndDate(self):
         return datetime.datetime.combine(self.Date, self.endTime).isoformat() + 'Z'
+
+    def GetYearMonthArray(self):
+        return (self.Date.year, self.Date.month)
     
     def GetGoogleEventDictionary(self):
         if self.allday:

@@ -44,7 +44,6 @@ class CalendarFunc:
             self.offset = self.currentMonth()
 
         today = self.LastMonth(self.offset)
-        print(today)
         month = today.month
         weekday = today.weekday()
         monthRange = C.monthrange(today.year, today.month)
@@ -61,6 +60,18 @@ class CalendarFunc:
     def GoogleMonth(self,year,month):
         GE = self.GoogleEvents[year,month]
         return GE
+
+    ##ONLY FOR REFRESH
+    def RefreshMonth(self,event,remove):
+        idNum = event.idNum
+        ARRE = event.GetYearMonthArray()
+        lix = self.GoogleEvents[ARRE]
+        if remove:
+            for i in lix:
+                if i.idNum == idNum:
+                    self.GoogleEvents[ARRE].remove(i)
+        else:
+            self.GoogleEvents[ARRE].append(event)
 
     def AllFromGoogleMonthDay(self,gMonth,day):
         lis = []
@@ -98,3 +109,10 @@ class CalendarFunc:
         event = data.GetGoogleEventDictionary()
         event = self.Gservice.events().insert(calendarId='primary', body=event).execute()
         print ('Event created: %s' % (event.get('htmlLink')))
+
+
+    def DeleteFromCalendar(self,idNum,GoogleAccount):
+        if GoogleAccount:
+            gapi.DeleteGoogleCalendarEvent(self.Gservice,idNum)
+        else:
+            self.dBConn.removeRow(idNum)

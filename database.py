@@ -47,6 +47,9 @@ class Database:
 
         return idList
     
+    def removeRow(self,idNum):
+        result = self.cursor.execute("DELETE FROM cal WHERE ID=?", (idNum,))
+        self.connection.commit()
     def getEventObjects(self, ThisDate):
         data = self.returnAllFromDay(ThisDate)
         lis = []
