@@ -13,7 +13,7 @@ import datetime
 import dateutil.parser
 from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
-from CalendarEvent import CalendarEvent as CE
+from calendarEvent import CalendarEvent as CE
 
 
 try:

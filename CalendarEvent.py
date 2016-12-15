@@ -3,7 +3,6 @@ from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
 import time
 from dateutil.parser import parse
-from pprint import pprint
 import dateutil.parser
 
 class CalendarEvent:
@@ -44,8 +43,10 @@ class CalendarEvent:
         
         if self.strtTime > self.endTime:
             print('StartTime must not be after end Time')
-            self.endTime = datetime.time(self.strtTime.hour+1,self.strtTime.minute,
-                                         self.strtTime.second)
+            try:
+                self.endTime = datetime.time(self.strtTime.hour+1,self.strtTime.minute,
+                                             self.strtTime.second)
+            except Exception: pass
         
     def __str__(self):
         return str(self.summary + ', ' + self.description)

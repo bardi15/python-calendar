@@ -2,7 +2,7 @@ import calendar as C
 import datetime
 from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
-import GoogleAPI as gapi
+import googleAPI as gapi
 
 class CalendarFunc:
     def __init__(self,dBConn):
@@ -22,7 +22,11 @@ class CalendarFunc:
         elif C is None:
             raise ValueError('MISSING DAY PARAMETER')
         ##YEAR MONTH DAY
-        else: pass
+        else:
+            D = datetime.datetime(A,B,C)
+            P = (D.year - self.today.year)*12 + D.month - self.today.month
+            self.currMonth[0] += P
+            return self.currMonth[0]
 
     def Week(self):
         l = []
@@ -94,4 +98,3 @@ class CalendarFunc:
         event = data.GetGoogleEventDictionary()
         event = self.Gservice.events().insert(calendarId='primary', body=event).execute()
         print ('Event created: %s' % (event.get('htmlLink')))
-

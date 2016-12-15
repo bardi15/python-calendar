@@ -1,5 +1,5 @@
 import sqlite3
-from CalendarEvent import CalendarEvent as CE
+from calendarEvent import CalendarEvent as CE
 
 #########################################################
 ##DATABASE CONNECTION                                   #

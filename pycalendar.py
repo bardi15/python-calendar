@@ -3,7 +3,7 @@ from tkinter import *
 import datetime
 import operator
 
-from CalendarEvent import CalendarEvent as CE
+from calendarEvent import CalendarEvent as CE
 from database import Database
 from calendarFunctions import CalendarFunc
 
@@ -154,7 +154,6 @@ class Application(Frame):
         self.d.pack(pady=30)
         self.update()
 
-
 #########################################################
 ##CREATE EVENT MODAL                                    #
 #########################################################
@@ -220,17 +219,17 @@ class Event(tk.Frame):
         self.alldayEntry = tk.Checkbutton(self.bottomFrame, variable=self.y)
         self.alldayEntry.grid(row=6, column=1, sticky=W)
 
-        google = Label(self.bottomFrame, text='Add To Google')
-        google.grid(row=7, column=0, sticky=W)
-        self.z = tk.IntVar()
-        self.googleEntry = tk.Checkbutton(self.bottomFrame, variable=self.z)
-        self.googleEntry.grid(row=7, column=1, sticky=W)
+##        google = Label(self.bottomFrame, text='Add To Google')
+##        google.grid(row=7, column=0, sticky=W)
+##        self.z = tk.IntVar()
+##        self.googleEntry = tk.Checkbutton(self.bottomFrame, variable=self.z)
+##        self.googleEntry.grid(row=7, column=1, sticky=W)
 
         dax = Label(self.bottomFrame, text='')
-        dax.grid(row=8, column=0)
+        dax.grid(row=7, column=0)
         
         submit = Button(self.bottomFrame, text ="Submit", command=self.on_submit)
-        submit.grid(row=9, column=1, sticky=E)
+        submit.grid(row=8, column=1, sticky=E)
         
     def on_submit(self):
         data = GrapFromEvent(self)
@@ -269,5 +268,3 @@ app.parent.resizable(0,0)
 app.mainloop()
 
 dBConn.closeConnection()
-
-
