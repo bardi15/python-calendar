@@ -1,4 +1,5 @@
 import sqlite3
+from CalendarEvent import CalendarEvent as CE
 
 #########################################################
 ##DATABASE CONNECTION                                   #
@@ -45,6 +46,22 @@ class Database:
             idList.append(row)
 
         return idList
+    
+    def getEventObjects(self, ThisDate):
+        data = self.returnAllFromDay(ThisDate)
+        lis = []
+        for i in data:
+            event = CE(
+                i[0], ##id
+                i[1], ##summary
+                i[2], ##description
+                i[4], ##beginTime
+                i[5], ##endTime
+                False, ##from google account
+                i[3] ##date
+            )
+            lis.append(event)
+        return lis
 
     #lokar connection og cursor.
     def closeConnection(self):

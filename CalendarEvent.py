@@ -1,11 +1,7 @@
-import tkinter as tk
-from tkinter import *
 import datetime
 from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
 import time
-import calendar as C
-import sqlite3
 from dateutil.parser import parse
 from pprint import pprint
 import dateutil.parser

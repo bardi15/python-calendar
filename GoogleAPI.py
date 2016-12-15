@@ -82,7 +82,6 @@ def getStartAndEndOfMonth(year,month):
 
 def GetEvents(year,month,service):
     now = getStartAndEndOfMonth(year,month)
-    #service = GetCredentials()
     eventsResult = service.events().list(
         calendarId='primary', timeMin=now[0], timeMax=now[1], maxResults=2500, singleEvents=True,
         orderBy='startTime').execute()
@@ -94,7 +93,6 @@ def Get12MonthEvents(service):
     YEAR = MonthBegin.year
     MONTH = MonthBegin.month
     DATE = datetime.datetime(YEAR,1,1).isoformat() + 'Z'
-    #service = GetCredentials()
     eventsResult = service.events().list(
         calendarId='primary', timeMin=DATE, maxResults=2500, singleEvents=True,
         orderBy='startTime').execute()
@@ -125,11 +123,7 @@ def GenerateList(eventsResult):
             True
         )
 
-##        print(event.strtTime)
-##        print(event.endTime)
-##        print(event.Date)
         MONTH = event.Date.month
         YEAR = event.Date.year
         MonthDicts[(YEAR,MONTH)].append(event)
-        #print('lengtj:', len(MonthDicts))
     return MonthDicts 
