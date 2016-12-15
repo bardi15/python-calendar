@@ -196,17 +196,20 @@ class Calender(tk.Frame):
 
         self.buttonFrame = Frame(self.toplevel, height=30, width=400, bg='blue')
         self.buttonFrame.pack(side=BOTTOM, expand=False)
+
+        
+
         events = event.widget.interesting
         date = str(event.widget.dates)[0:10]
         del dateIs[:]
         dateIs.append(date)
         events.sort(key = lambda x: x[4])
         r = 2
-        if len(events) > 1:
+        if len(events) > 0:
             for i in events:
                 theEvent = i[4]+'-'+i[5]+' - '+i[1]
                 self.event = Label(self.main, text=theEvent)
-                self.event.pack(anchor='nw')
+                self.event.pack(anchor='nw', expand=False)
                 r+=2
         else:
             self.noEvent = Label(self.main, text='There are no events for this day')
@@ -281,6 +284,7 @@ class Application(Frame):
 
         self.month = Label(self.parent, text=dateSpec, font='mincho, 40')
         self.month.pack(side=TOP)
+        
 
         self.d = Calender(self.parent)
         self.d.pack(pady=30)
@@ -439,8 +443,8 @@ class Event(tk.Frame):
     #     dax = Label(self.toplevel, text='')
     #     dax.grid(row=6, column=1)
         
-        submit = Button(self.contentFrame, text ="Submit", command=self.on_submit)
-        submit.grid(row=6, column=0)
+        # submit = Button(self.contentFrame, text ="Submit", command=self.on_submit)
+        # submit.grid(row=6, column=0)
         
     def on_submit(self):
         data = GrapFromEvent(self)
