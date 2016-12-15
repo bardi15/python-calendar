@@ -64,15 +64,19 @@ class CalendarFunc:
 
     ##ONLY FOR REFRESH
     def RefreshMonth(self,event,remove):
-        idNum = event.idNum
-        ARRE = event.GetYearMonthArray()
-        lix = self.GoogleEvents[ARRE]
-        if remove:
-            for i in lix:
-                if i.idNum == idNum:
-                    self.GoogleEvents[ARRE].remove(i)
-        else:
-            self.GoogleEvents[ARRE].append(event)
+        #self.GoogleEvents = self.gapi.GenerateList()
+        self.gapi.Refresh()
+        self.GoogleEvents = self.gapi.GenerateList()
+        #self.MDict = self.CreateMonthDict()
+##        idNum = event.idNum
+##        ARRE = event.GetYearMonthArray()
+##        lix = self.GoogleEvents[ARRE]
+##        if remove:
+##            for i in lix:
+##                if i.idNum == idNum:
+##                    self.GoogleEvents[ARRE].remove(i)
+##        else:
+##            self.GoogleEvents[ARRE].append(event)
 
     def AllFromGoogleMonthDay(self,gMonth,day):
         lis = []

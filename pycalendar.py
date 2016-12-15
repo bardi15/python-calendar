@@ -84,7 +84,6 @@ class Calender(tk.Frame):
         TX.pack()
         CurrentM = CFUtil.DateInformation()
         CMonth= CFUtil.CreateMonthDict()
-
         for key,value in CMonth.items():
             DAY = key
             X = value[0]

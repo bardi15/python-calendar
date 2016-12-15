@@ -94,6 +94,9 @@ class GoogleAPI:
 ##            orderBy='startTime').execute()
 ##        return eventsResult
 
+    def Refresh(self):
+        self.eventsResult = self.Get12MonthEvents()
+
     def Get12MonthEvents(self):
         firstdayofCurrMonth = date.today().replace(day=1)
         MonthBegin = firstdayofCurrMonth + relativedelta(months=- 12)
