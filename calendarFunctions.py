@@ -2,15 +2,15 @@ import calendar as C
 import datetime
 from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
-import googleAPI as gapi
+from googleAPI import GoogleAPI as gapi
 
 class CalendarFunc:
     def __init__(self,dBConn):
         self.currMonth = [0]
         self.today = date.today()
         self.offset = 0
-        self.Gservice = gapi.GetCredentials()
-        self.GoogleEvents = gapi.GenerateList(gapi.Get12MonthEvents(self.Gservice))
+        self.gapi = gapi()
+        self.GoogleEvents = self.gapi.GenerateList()
         self.dBConn = dBConn
 
     def currentMonth(self, A = None,B = None,C = None):
@@ -107,12 +107,11 @@ class CalendarFunc:
 
     def AddToGoogleCalendar(self,data):
         event = data.GetGoogleEventDictionary()
-        event = self.Gservice.events().insert(calendarId='primary', body=event).execute()
-        print ('Event created: %s' % (event.get('htmlLink')))
+        self.gapi.AddGoogleCalendarEvent(event)
 
 
     def DeleteFromCalendar(self,idNum,GoogleAccount):
         if GoogleAccount:
-            gapi.DeleteGoogleCalendarEvent(self.Gservice,idNum)
+            self.gapi.DeleteGoogleCalendarEvent(idNum)
         else:
             self.dBConn.removeRow(idNum)
