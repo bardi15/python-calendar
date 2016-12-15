@@ -17,6 +17,7 @@ _RCTHEIGHT = 50
 _RCTWIDTH = 80
 _APPWIDTH = 603
 currMonth = [0]
+dateIs = ['']
 
 #########################################################
 ##DATABASE CONNECTION                                   #
@@ -206,14 +207,20 @@ class Calender(tk.Frame):
         self.buttonFrame = Frame(self.toplevel, height=30, width=400, bg='blue')
         self.buttonFrame.pack(side=BOTTOM, expand=False)
         events = event.widget.interesting
-
-        r = 0
+        date = str(event.widget.dates)[0:10]
+        del dateIs[:]
+        dateIs.append(date)
         events.sort(key = lambda x: x[4])
-        for i in events:
-            theEvent = i[4]+'-'+i[5]+' - '+i[1]
-            self.event = Label(self.main, text=theEvent)
-            self.event.pack(anchor='nw')
-            r+=2
+        r = 2
+        if len(events) > 1:
+            for i in events:
+                theEvent = i[4]+'-'+i[5]+' - '+i[1]
+                self.event = Label(self.main, text=theEvent)
+                self.event.pack(anchor='nw')
+                r+=2
+        else:
+            self.noEvent = Label(self.main, text='There are no events for this day')
+            self.noEvent.pack(side=TOP)
 
         self.addEvent = Button(self.buttonFrame, text="Create New Event", command=Event, bd=1, relief=SOLID)
         self.addEvent.pack(side=LEFT)
@@ -268,6 +275,7 @@ class Calender(tk.Frame):
             day.grid(row=X, column=Y)
             text = day.create_text(10, 10, anchor="nw")
             day.interesting = DAYEVENTS
+            day.dates = DATE
             day.insert(text, 25, str(DAY))
             day.bind('<Double-Button-1>', self.CreateEvent)
 
@@ -334,6 +342,7 @@ class Event(tk.Frame):
         super().__init__(master)
         self.pack()
         self.CreateEvent()
+        
 
     def CreateEvent(self):
         self.toplevel = Toplevel()
@@ -347,13 +356,14 @@ class Event(tk.Frame):
         description.grid(row=1, column=0)
         self.descriptionEntry = Text(self.toplevel, height=2, width=15, bd=1, relief=SOLID)
         self.descriptionEntry.grid(row=1, column=1)
-
+        
         v = StringVar()
         day = Label(self.toplevel, text='Date')
         day.grid(row=2, column=0)
         self.dayEntry = Entry(self.toplevel, textvariable=v)
         self.dayEntry.grid(row=2, column=1)
-        v.set(str(date.today()))
+        v.set(dateIs[0])
+
 
         DD = datetime.datetime.now()
         w = StringVar()
