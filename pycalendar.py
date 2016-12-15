@@ -305,11 +305,11 @@ class Application(Frame):
 
     def prevMonth(self):
         currentMonth(-1)
-        self.changeMonth(self.month, self.d)
+        self.changeMonth()
 
     def nextMonth(self):
         currentMonth(1)
-        self.changeMonth(self.month, self.d)
+        self.changeMonth()
 
     def changeMonth(self):
         dateInfo = DateInformation(currentMonth())
