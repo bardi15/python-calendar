@@ -212,7 +212,7 @@ class Calender(tk.Frame):
             self.noEvent = Label(self.main, text='There are no events for this day')
             self.noEvent.pack(side=TOP)
 
-        self.addEvent = Button(self.buttonFrame, text="Create New Event", command=Event, bd=1, relief=SOLID)
+        self.addEvent = Button(self.buttonFrame, text="Create New Event", command = lambda: Event(dateIs[0]), bd=1, relief=SOLID)
         self.addEvent.pack(side=LEFT)
         
     def Weekdays(self):
@@ -254,12 +254,6 @@ class Calender(tk.Frame):
                 #print('TODAY')
 
             day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg=FrameColor)
-##            if ALLDAY:
-##                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='blue')                
-##            elif len(DAYEVENTS) > 0:
-##                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='brown')
-##            else:
-##                day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg='white') 
             day.grid(row=X, column=Y)
             text = day.create_text(10, 10, anchor="nw")
             day.interesting = DAYEVENTS
@@ -270,6 +264,8 @@ class Calender(tk.Frame):
 #########################################################
 ##APPLICATION FRAMEWORK                                 #
 #########################################################
+def currentDate():
+    return str(datetime.datetime.now())[0:10]
 
 class Application(Frame):
     def __init__(self, master=None):
@@ -296,7 +292,8 @@ class Application(Frame):
         self.prev.pack(side=LEFT)
         self.next = Button(self.bottomFrame, text='Next', command=self.nextMonth)
         self.next.pack(side=LEFT)
-        self.addEvent = Button(self.bottomFrame, text='Add Event', command=Event)
+        cDate = currentDate()
+        self.addEvent = Button(self.bottomFrame, text='Add Event', command= lambda: Event(cDate))
         self.addEvent.pack(side=LEFT)
 
     def prevMonth(self):
@@ -326,15 +323,16 @@ class Application(Frame):
 ##CREATE EVENT MODAL                                    #
 #########################################################
 class Event(tk.Frame):
-    def __init__(self,master=None):
+    def __init__(self, cDate, master=None):
         super().__init__(master)
-        self.currentDate = datetime.datetime.now()
+        self.currentDate = cDate
         self.pack()
         self.CreateEvent()
         
         
 
     def CreateEvent(self):
+        print(self.currentDate)
         self.toplevel = Toplevel()
         self.toplevel.title('Create New Event')
         self.toplevel.geometry(newWindowSize)
@@ -369,7 +367,7 @@ class Event(tk.Frame):
         day.grid(row=2, column=0, sticky='w')
         self.dayEntry = Entry(self.contentFrame, textvariable=v)
         self.dayEntry.grid(row=2, column=1)
-        v.set(dateIs[0])
+        v.set(self.currentDate)
 
         DD = datetime.datetime.now()
         w = StringVar()
