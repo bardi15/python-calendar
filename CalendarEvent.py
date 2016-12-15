@@ -12,16 +12,11 @@ import dateutil.parser
 
 class CalendarEvent:
     def __init__(self, idNum, summary, description,  strtTime, endTime, GoogleAccount, Date=None):
-
-        #print('idNum:',idNum,'\nsummary:',summary,'\ndescription:',description,'\nstrtTime:',strtTime,
-        #      '\nendTime:',endTime,'\nGoogleAccount:',GoogleAccount,'\nDate:',Date, '\n\n')
         self.idNum = idNum
         self.summary = summary
         self.description = description
         self.allday = False
-        #print('ok')
         if Date is None: #IMPORT FROM GOOGLE
-            #print('date is none')
             strtTime = dateutil.parser.parse(strtTime)
             endTime = dateutil.parser.parse(endTime)
             if strtTime == endTime:

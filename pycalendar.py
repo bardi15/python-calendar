@@ -11,6 +11,7 @@ from pprint import pprint
 import operator
 import GoogleAPI as gapi
 from CalendarEvent import CalendarEvent as CE
+from database import Database as DB
 
 ##GLOBAL VARIABLES
 _RECTANGLESIZE = 5
@@ -21,64 +22,6 @@ currMonth = [0]
 newWindowSize = '400x400'
 dateIs = ['']
 
-#########################################################
-##DATABASE CONNECTION                                   #
-#########################################################
-
-# breytan sem thu setur inn i returnID fallid til ad testa
-t = '2016-12-16'
-
-# insertIntoDB(summ, desc, days, stim, etim, stat)
-
-#############################
-
-# Tenging vid gagnagrunninn
-connection = sqlite3.connect('calendarDatabase.db')
-cursor = connection.cursor()
-
-# Byr til tofluna ef hun er ekki til
-def createTable():
-    try:
-        cursor.execute('CREATE TABLE IF NOT EXISTS cal(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, summary VARCHAR(50), description VARCHAR(300), day DATE, starttime TIME, endtime TIME, allday BOOLEAN)')
-        connection.commit()
-    except sqlite3.OperationalError: print('CAN NOT CREATE TABLE')
-
-# Insertar inn i tofluna 
-def insertIntoDB(summary, description, days, starttime, endtime, allday):
-    cursor.execute("INSERT INTO cal(summary, description, day, starttime, endtime, allday) VALUES(?, ?, ?, ?, ?, ?)",
-                   (summary, description, days, starttime, endtime, allday))
-    connection.commit()
-    #print('added', starttime, ' ', endtime, ' ', summary, ' ', days)
-
-#skilar lista af ID sem er == og day parameter
-def returnAllFromDay(day):
-    idList = []
-    result = cursor.execute('SELECT * FROM cal WHERE day = ?', (day, ))
-
-    for row in result:
-        idList.append(row)
-    
-    return idList
-
-def returnAllFromID(ID):
-    result = cursor.execute('SELECT * FROM cal WHERE ID = ?', (ID, ))
-    p = list(cursor)
-    
-    return p
-
-def returnAll():
-    idList = []
-    result = cursor.execute('SELECT * FROM cal', ())
-
-    for row in result:
-        idList.append(row)
-
-    return idList
-
-#lokar connection og cursor.
-def closeConnection():
-    cursor.close()
-    connection.close()
 
 #########################################################
 ##CALENDER FUNCTIONS                                    #
@@ -125,9 +68,7 @@ def DateInformation(offset):
     return dict
 
 def FromDatabaseToEventObject(ThisDate):
-    #print(ThisDate)
-    data = returnAllFromDay(ThisDate)
-    #print(data)
+    data = dBConn.returnAllFromDay(ThisDate)
     lis = []
     for i in data:
         event = CE(
@@ -144,7 +85,6 @@ def FromDatabaseToEventObject(ThisDate):
 
 def GoogleMonth(year,month):
     GE = GoogleEvents[year,month]
-    #print('LENGTH:::::::',len(GE))
     return GE
 
 def AllFromGoogleMonthDay(gglMonth,day):
@@ -158,7 +98,6 @@ def AllFromGoogleMonthDay(gglMonth,day):
 def CreateMonthDict(MONTH):
     D = DateInformation(MONTH)
     GM = GoogleMonth(D['Year'],D['NumberOfCurrentMonth'])
-    #print('GM = GoogleMonth(D:',len(GM))
     Location = []
     MDict = {}
     for i in range (D['DaysInMonth']):
@@ -182,7 +121,7 @@ class Calender(tk.Frame):
         self.Weekdays()
         self.Days()
 
-    def CreateEvent(self, event):
+    def DisplayEvents(self, event):
         self.toplevel = Toplevel(self)
         self.toplevel.title('Events')
         self.toplevel.geometry(newWindowSize)
@@ -193,10 +132,7 @@ class Calender(tk.Frame):
         self.buttonFrame = Frame(self.toplevel, height=30, width=400, bg='blue')
         self.buttonFrame.pack(side=BOTTOM, expand=False)
 
-        
-
         events = event.widget.interesting
-        #print('calendar size: ', len(events))
         date = str(event.widget.dates)[0:10]
         del dateIs[:]
         dateIs.append(date)
@@ -211,7 +147,6 @@ class Calender(tk.Frame):
         else:
             self.noEvent = Label(self.main, text='There are no events for this day')
             self.noEvent.pack(side=TOP)
-
         self.addEvent = Button(self.buttonFrame, text="Create New Event", command = lambda: Event(dateIs[0]), bd=1, relief=SOLID)
         self.addEvent.pack(side=LEFT)
         
@@ -231,7 +166,6 @@ class Calender(tk.Frame):
         TX.pack()
         CurrentM = DateInformation(currentMonth())
         CMonth= CreateMonthDict(currentMonth())
-        #print('indays, cmonth:', len(CMonth))
 
         for key,value in CMonth.items():
             DAY = key
@@ -242,13 +176,11 @@ class Calender(tk.Frame):
             DAYEVENTS = value[3]
             if len(DAYEVENTS) > 0:
                 FrameColor = 'brown'
-                #print('brown')
             ##CHECKS IF ALL DAY:
             for i in DAYEVENTS:
                 if i.allday:
                     #ALLDAY = True
                     FrameColor = 'blue'
-                    #print('itsallday')
             if DATE.date() == datetime.datetime.today().date():
                 #TODAY = True
                 FrameColor = 'green'
@@ -258,7 +190,7 @@ class Calender(tk.Frame):
             day.interesting = DAYEVENTS
             day.dates = DATE
             day.insert(text, 25, str(DAY))
-            day.bind('<Double-Button-1>', self.CreateEvent)
+            day.bind('<Double-Button-1>', self.DisplayEvents)
 
 #########################################################
 ##APPLICATION FRAMEWORK                                 #
@@ -281,7 +213,6 @@ class Application(Frame):
         self.month = Label(self.parent, text=dateSpec, font='mincho, 40')
         self.month.pack(side=TOP)
         
-
         self.d = Calender(self.parent)
         self.d.pack(pady=30)
 
@@ -330,7 +261,6 @@ class Event(tk.Frame):
         self.CreateEvent()
 
     def CreateEvent(self):
-        #print(self.currentDate)
         self.toplevel = Toplevel()
         self.toplevel.title('Create New Event')
         self.toplevel.geometry('290x400')
@@ -349,17 +279,13 @@ class Event(tk.Frame):
         self.summaryEntry = Entry(self.bottomFrame, width=20)
         self.summaryEntry.grid(row=1, column=1, padx=5, pady=5, ipady=2, sticky=W)
 
-        # d = StringVar()
-        # dt = datetime.datetime.now()
-        # s = dateIs[0]
         description = Label(self.bottomFrame, text='Description')
         description.grid(row=2, column=0, sticky=W+N)
         self.descriptionEntry = Text(self.bottomFrame, height=10, width=26)
         self.descriptionEntry.config(highlightcolor='#80ADDB', highlightthickness=2)
         self.descriptionEntry.config(highlightbackground='#BFBFBF', highlightthickness=0.5)
         self.descriptionEntry.grid(row=2, column=1)
-        # self.descriptionEntry.insert(INSERT, str(s))
-
+        
         v = StringVar()
         day = Label(self.bottomFrame, text='Date')
         day.grid(row=3, column=0, sticky=W)
@@ -389,58 +315,17 @@ class Event(tk.Frame):
         self.alldayEntry = tk.Checkbutton(self.bottomFrame, variable=self.y)
         self.alldayEntry.grid(row=6, column=1, sticky=W)
 
+        google = Label(self.bottomFrame, text='Add To Google')
+        google.grid(row=7, column=0, sticky=W)
+        self.z = tk.IntVar()
+        self.googleEntry = tk.Checkbutton(self.bottomFrame, variable=self.z)
+        self.googleEntry.grid(row=7, column=1, sticky=W)
+
         dax = Label(self.bottomFrame, text='')
-        dax.grid(row=7, column=0)
+        dax.grid(row=8, column=0)
         
         submit = Button(self.bottomFrame, text ="Submit", command=self.on_submit)
-        submit.grid(row=8, column=1, sticky=E)
-##__________________________________________
-        # summary = Label(self.toplevel, text='Title')
-        # summary.grid(row=0, column=0)
-        # self.summaryEntry = Entry(self.toplevel)
-        # self.summaryEntry.grid(row=0, column=1)
-        
-    #     description = Label(self.toplevel, text='Description')
-    #     description.grid(row=1, column=0)
-    #     self.descriptionEntry = Text(self.toplevel, height=2, width=15, bd=1, relief=SOLID)
-    #     self.descriptionEntry.grid(row=1, column=1)
-        
-    #     v = StringVar()
-    #     day = Label(self.toplevel, text='Date')
-    #     day.grid(row=2, column=0)
-    #     self.dayEntry = Entry(self.toplevel, textvariable=v)
-    #     self.dayEntry.grid(row=2, column=1)
-    #     v.set(dateIs[0])
-
-
-    #     DD = datetime.datetime.now()
-    #     w = StringVar()
-    #     starttime = Label(self.toplevel, text='Starts')
-    #     starttime.grid(row=3, column=0)
-    #     self.starttimeEntry = Entry(self.toplevel,textvariable=w)
-    #     self.starttimeEntry.grid(row=3, column=1)
-    #     w.set(str(DD.hour) + ':' + str(DD.minute))
-
-
-    #     D2 = DD + datetime.timedelta(hours=1)
-    #     x = StringVar()
-    #     enddtime = Label(self.toplevel, text='Ends')
-    #     enddtime.grid(row=4, column=0)
-    #     self.enddtimeEntry = Entry(self.toplevel, textvariable=x)
-    #     self.enddtimeEntry.grid(row=4, column=1)
-    #     x.set(str(D2.hour) + ':' + str(D2.minute))
-
-    #     allday = Label(self.toplevel, text='All Day?')
-    #     allday.grid(row=5, column=0)
-    #     self.y = tk.IntVar()
-    #     self.alldayEntry = tk.Checkbutton(self.toplevel,text="", variable=self.y)
-    #     self.alldayEntry.grid(row=5, column=1)
-
-    #     dax = Label(self.toplevel, text='')
-    #     dax.grid(row=6, column=1)
-        
-        # submit = Button(self.contentFrame, text ="Submit", command=self.on_submit)
-        # submit.grid(row=6, column=0)
+        submit.grid(row=9, column=1, sticky=E)
         
     def on_submit(self):
         data = GrapFromEvent(self)
@@ -449,21 +334,8 @@ class Event(tk.Frame):
         self.toplevel.destroy()
         app.changeMonth()
 
-##def StringDateToGoogleDate(date,starts,ends):
-##    SDate = date.split('-')
-##    SStarts = starts.split(':')
-##    SEnds = ends.split(':')
-##    startDateTime = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]),int(SStarts[0]),int(SStarts[1])).isoformat() + 'Z'
-##    endDateTime = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]),int(SEnds[0]),int(SEnds[1])).isoformat() + 'Z'
-##    return ([startDateTime,endDateTime])
 
 def GrapFromEvent(CreateEventData):
-##    Title = CreateEventData.summaryEntry.get()
-##    Description = CreateEventData.descriptionEntry.get('1.0',END)
-##    Date = CreateEventData.dayEntry.get()
-##    Starts = CreateEventData.starttimeEntry.get()
-##    Ends = CreateEventData.enddtimeEntry.get()
-##    AllDay = CreateEventData.y.get()
 
     event = CE(
         '00', ##id
@@ -474,51 +346,16 @@ def GrapFromEvent(CreateEventData):
         False, ##from google account
         CreateEventData.dayEntry.get() ##date
         )
-
-    #print(event.summary)
-    #print(CreateEventData.dayEntry.get())
     return event
-    #eturn ([Title,Description,Date,Starts,Ends,AllDay])
 
     
 def AddToCalendar(data):
-##    Date = data[2]
-##    SDate = Date.split('-')
-##    DateTimeDate = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]))
-    insertIntoDB(data.summary, data.description, data.getDatabaseDate(), data.startTimeToString(), data.endTimeToString(), data.allday)
+    dBConn.insertIntoDB(data.summary, data.description, data.getDatabaseDate(), data.startTimeToString(), data.endTimeToString(), data.allday)
 
 def AddToGoogleCalendar(data):
     event = data.GetGoogleEventDictionary()
-##    #G = Gservice
-##    dateDate = StringDateToGoogleDate(data[2],data[3],data[4])
-##    event = {
-##      'summary': data[0],
-##      'description': data[1],
-##      'start': {
-##        'dateTime': dateDate[0],
-##        'timeZone': 'Atlantic/Reykjavik',
-##      },
-##      'end': {
-##        'dateTime': dateDate[1],
-##        'timeZone': 'Atlantic/Reykjavik',
-##      'reminders': {
-##        'useDefault': True, },
-##      },
-##    }
     event = Gservice.events().insert(calendarId='primary', body=event).execute()
     print ('Event created: %s' % (event.get('htmlLink')))
-
-##VIEW SINGLE DAY ON CALENDAR
-#-----##TODO##
-
-
-##VIEW ALL EVENTS FOR MONTH ON CALENDAR
-#-----##TODO##
-
-
-##CONNECT CALENDAR TO GOOGLE CALENDAR
-#-----##TODO##
-
 
 
 
@@ -526,19 +363,8 @@ def AddToGoogleCalendar(data):
 ##START                                                 #
 #########################################################
 
-##TEST DATA FOR SQL
-createTable()
-##
-##x = datetime.datetime(2016,11,13)
-###print(x)
-##insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
-##
-x = datetime.datetime(2016,12,29)
-insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
-##
-##x = datetime.datetime(2016,12,17)
-##insertIntoDB('BYE', 'THAR', x, '14:00', '18:00', 'False')
-###currentMonth(0,1,2)
+dBConn = DB()
+dBConn.createTable()
 Gservice = gapi.GetCredentials()
 GoogleEvents = gapi.GenerateList(gapi.Get12MonthEvents(Gservice))
 root = tk.Tk()
@@ -547,6 +373,7 @@ app = Application(root)
 app.parent.geometry('603x570')
 app.parent.resizable(0,0)
 app.mainloop()
-closeConnection()
+
+dBConn.closeConnection()
 
 
