@@ -17,7 +17,7 @@ _RCTHEIGHT = 50
 _RCTWIDTH = 80
 _APPWIDTH = 603
 currMonth = [0]
-
+newWindowSize = '400x400'
 #########################################################
 ##DATABASE CONNECTION                                   #
 #########################################################
@@ -198,7 +198,7 @@ class Calender(tk.Frame):
 
     def CreateEvent(self, event):
         self.toplevel = Toplevel(self)
-        self.toplevel.geometry('400x400')
+        self.toplevel.geometry(newWindowSize)
 
         self.main = Frame(self.toplevel, height=370, width=400)
         self.main.pack(side=TOP, anchor='nw')
@@ -337,7 +337,7 @@ class Event(tk.Frame):
 
     def CreateEvent(self):
         self.toplevel = Toplevel()
-        self.toplevel.geometry('400x400')
+        self.toplevel.geometry(newWindowSize)
         summary = Label(self.toplevel, text='Title')
         summary.grid(row=0, column=0)
         self.summaryEntry = Entry(self.toplevel)
