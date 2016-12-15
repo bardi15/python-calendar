@@ -149,7 +149,6 @@ class Application(Frame):
         self.cur.pack(side = LEFT)
 
 
- 
     def currMonth(self):
         today = datetime.datetime.today()
         CFUtil.currentMonth(today.year, today.month, today.day)
@@ -242,16 +241,26 @@ class Event(tk.Frame):
         self.alldayEntry = tk.Checkbutton(self.bottomFrame, variable=self.y)
         self.alldayEntry.grid(row=6, column=1, sticky=W)
 
+        googleButton = Label(self.bottomFrame, text='Add to Google?')
+        googleButton.grid(row=7, column=0, sticky=W)
+        self.g = tk.IntVar()
+        self.googleButton = tk.Checkbutton(self.bottomFrame, variable=self.g, onvalue = 1, offvalue = 0)
+        self.googleButton.grid(row=7, column=1, sticky=W)
+
         dax = Label(self.bottomFrame, text='')
-        dax.grid(row=7, column=0)
+        dax.grid(row=8, column=0)
         
         submit = Button(self.bottomFrame, text ="Submit", command=self.on_submit)
-        submit.grid(row=8, column=1, sticky=E)
+        submit.grid(row=9, column=1, sticky=E)
         
     def on_submit(self):
         data = GrapFromEvent(self)
-        CFUtil.AddToCalendar(data)
-        CFUtil.AddToGoogleCalendar(data)
+        
+
+        if self.g.get() == 1:
+            CFUtil.AddToGoogleCalendar(data)
+        else:
+            CFUtil.AddToCalendar(data)
         self.toplevel.destroy()
         CFUtil.RefreshMonth(data,False)
         app.changeMonth()
