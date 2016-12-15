@@ -78,18 +78,6 @@ def closeConnection():
     cursor.close()
     connection.close()
 
-
-#########################################################
-##BUTTON FUNCTIONS:                                     #
-#########################################################
-
-# def prevMonth():
-#     print(currentMonth(-1))
-
-# def nextMonth():
-#     print(currentMonth(1))
-
-
 #########################################################
 ##CALENDER FUNCTIONS                                    #
 #########################################################
@@ -237,8 +225,6 @@ class Calender(tk.Frame):
             box.grid(row=0,column=i)
             canvas_id = box.create_text(10, 10, anchor="nw")
             box.insert(canvas_id, 25, Weekdays[i])
-
-
             
     def Days(self):
         TX = Frame(self)
@@ -342,59 +328,122 @@ class Application(Frame):
 class Event(tk.Frame):
     def __init__(self,master=None):
         super().__init__(master)
+        self.currentDate = datetime.datetime.now()
         self.pack()
         self.CreateEvent()
+        
         
 
     def CreateEvent(self):
         self.toplevel = Toplevel()
         self.toplevel.title('Create New Event')
         self.toplevel.geometry(newWindowSize)
-        summary = Label(self.toplevel, text='Title')
-        summary.grid(row=0, column=0)
-        self.summaryEntry = Entry(self.toplevel)
+        self.toplevel.resizable(0,0)
+
+        self.titleFrame = Frame(self.toplevel, height=70, width=400)
+        self.titleFrame.grid(row=0, column=0, pady=(10,15), padx=(0,0))
+        self.contentFrame = Frame(self.toplevel, height=330, width=400)
+        self.contentFrame.grid(row=4, column=0)
+
+        self.EventTitle = Label(self.titleFrame, text='Create Events', font="Verdana, 26")
+        self.EventTitle.pack(side=LEFT, expand=True, fill='both')
+
+        summary = Label(self.contentFrame, text='Title')
+        summary.grid(row=0, column=0, sticky='w') 
+        self.summaryEntry = Entry(self.contentFrame)
         self.summaryEntry.grid(row=0, column=1)
-        
-        description = Label(self.toplevel, text='Description')
-        description.grid(row=1, column=0)
-        self.descriptionEntry = Text(self.toplevel, height=2, width=15, bd=1, relief=SOLID)
+
+        d = StringVar()
+        dt = datetime.datetime.now()
+        s = dateIs[0]
+        description = Label(self.contentFrame, text='Description')
+        description.grid(row=1, column=0, sticky='w')
+        self.descriptionEntry = Text(self.contentFrame, height=10, width=26)
+        self.descriptionEntry.config(highlightcolor='#80ADDB', highlightthickness=2)
+        self.descriptionEntry.config(highlightbackground='#BFBFBF', highlightthickness=0.5)
         self.descriptionEntry.grid(row=1, column=1)
-        
+        self.descriptionEntry.insert(INSERT, str(s))
+
         v = StringVar()
-        day = Label(self.toplevel, text='Date')
-        day.grid(row=2, column=0)
-        self.dayEntry = Entry(self.toplevel, textvariable=v)
+        day = Label(self.contentFrame, text='Date')
+        day.grid(row=2, column=0, sticky='w')
+        self.dayEntry = Entry(self.contentFrame, textvariable=v)
         self.dayEntry.grid(row=2, column=1)
         v.set(dateIs[0])
 
-
         DD = datetime.datetime.now()
         w = StringVar()
-        starttime = Label(self.toplevel, text='Starts')
-        starttime.grid(row=3, column=0)
-        self.starttimeEntry = Entry(self.toplevel,textvariable=w)
+        starttime = Label(self.contentFrame, text='Starts')
+        starttime.grid(row=3, column=0, sticky='w')
+        self.starttimeEntry = Entry(self.contentFrame,textvariable=w)
         self.starttimeEntry.grid(row=3, column=1)
         w.set(str(DD.hour) + ':' + str(DD.minute))
 
-
         D2 = DD + datetime.timedelta(hours=1)
         x = StringVar()
-        enddtime = Label(self.toplevel, text='Ends')
-        enddtime.grid(row=4, column=0)
-        self.enddtimeEntry = Entry(self.toplevel, textvariable=x)
+        enddtime = Label(self.contentFrame, text='Ends')
+        enddtime.grid(row=4, column=0, sticky='w')
+        self.enddtimeEntry = Entry(self.contentFrame, textvariable=x)
         self.enddtimeEntry.grid(row=4, column=1)
         x.set(str(D2.hour) + ':' + str(D2.minute))
 
-        allday = Label(self.toplevel, text='All Day?')
-        allday.grid(row=5, column=0)
+        allday = Label(self.contentFrame, text='All Day?')
+        allday.grid(row=5, column=0, sticky='w')
         self.y = tk.IntVar()
-        self.alldayEntry = tk.Checkbutton(self.toplevel,text="", variable=self.y)
-        self.alldayEntry.grid(row=5, column=1)
+        self.alldayEntry = tk.Checkbutton(self.contentFrame,text="", variable=self.y)
+        self.alldayEntry.grid(row=5, column=1, sticky='w')
 
-        dax = Label(self.toplevel, text='')
+        dax = Label(self.contentFrame, text='')
         dax.grid(row=6, column=1)
         
-        submit = Button(self.toplevel, text ="Submit", command=self.on_submit)
+        submit = Button(self.contentFrame, text ="Submit", command=self.on_submit)
+        submit.grid(row=6, column=0)
+
+        # summary = Label(self.toplevel, text='Title')
+        # summary.grid(row=0, column=0)
+        # self.summaryEntry = Entry(self.toplevel)
+        # self.summaryEntry.grid(row=0, column=1)
+        
+    #     description = Label(self.toplevel, text='Description')
+    #     description.grid(row=1, column=0)
+    #     self.descriptionEntry = Text(self.toplevel, height=2, width=15, bd=1, relief=SOLID)
+    #     self.descriptionEntry.grid(row=1, column=1)
+        
+    #     v = StringVar()
+    #     day = Label(self.toplevel, text='Date')
+    #     day.grid(row=2, column=0)
+    #     self.dayEntry = Entry(self.toplevel, textvariable=v)
+    #     self.dayEntry.grid(row=2, column=1)
+    #     v.set(dateIs[0])
+
+
+    #     DD = datetime.datetime.now()
+    #     w = StringVar()
+    #     starttime = Label(self.toplevel, text='Starts')
+    #     starttime.grid(row=3, column=0)
+    #     self.starttimeEntry = Entry(self.toplevel,textvariable=w)
+    #     self.starttimeEntry.grid(row=3, column=1)
+    #     w.set(str(DD.hour) + ':' + str(DD.minute))
+
+
+    #     D2 = DD + datetime.timedelta(hours=1)
+    #     x = StringVar()
+    #     enddtime = Label(self.toplevel, text='Ends')
+    #     enddtime.grid(row=4, column=0)
+    #     self.enddtimeEntry = Entry(self.toplevel, textvariable=x)
+    #     self.enddtimeEntry.grid(row=4, column=1)
+    #     x.set(str(D2.hour) + ':' + str(D2.minute))
+
+    #     allday = Label(self.toplevel, text='All Day?')
+    #     allday.grid(row=5, column=0)
+    #     self.y = tk.IntVar()
+    #     self.alldayEntry = tk.Checkbutton(self.toplevel,text="", variable=self.y)
+    #     self.alldayEntry.grid(row=5, column=1)
+
+    #     dax = Label(self.toplevel, text='')
+    #     dax.grid(row=6, column=1)
+        
+        submit = Button(self.contentFrame, text ="Submit", command=self.on_submit)
         submit.grid(row=6, column=0)
         
     def on_submit(self):
