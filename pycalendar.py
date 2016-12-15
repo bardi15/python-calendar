@@ -8,8 +8,9 @@ import calendar as C
 import sqlite3
 from dateutil.parser import parse
 from pprint import pprint
+import operator
 import GoogleAPI as gapi
-GoogleEvents = []
+from CalendarEvent import CalendarEvent as CE
 
 ##GLOBAL VARIABLES
 _RECTANGLESIZE = 5
@@ -47,6 +48,7 @@ def insertIntoDB(summary, description, days, starttime, endtime, allday):
     cursor.execute("INSERT INTO cal(summary, description, day, starttime, endtime, allday) VALUES(?, ?, ?, ?, ?, ?)",
                    (summary, description, days, starttime, endtime, allday))
     connection.commit()
+    #print('added', starttime, ' ', endtime, ' ', summary, ' ', days)
 
 #skilar lista af ID sem er == og day parameter
 def returnAllFromDay(day):
@@ -122,46 +124,41 @@ def DateInformation(offset):
     dict['NumberOfCurrentMonth'] = month
     return dict
 
+def FromDatabaseToEventObject(ThisDate):
+    #print(ThisDate)
+    data = returnAllFromDay(ThisDate)
+    #print(data)
+    lis = []
+    for i in data:
+        event = CE(
+            i[0], ##id
+            i[1], ##summary
+            i[2], ##description
+            i[4], ##beginTime
+            i[5], ##endTime
+            False, ##from google account
+            i[3] ##date
+        )
+        lis.append(event)
+    return lis
+
 def GoogleMonth(year,month):
     GE = GoogleEvents[year,month]
+    #print('LENGTH:::::::',len(GE))
     return GE
 
 def AllFromGoogleMonthDay(gglMonth,day):
     lis = []
     for i in gglMonth:
-        Stime = i['starttime']
-        if Stime.day == day:
-            Date = Stime.date()
-            TY = Stime.hour
-            TZ = Stime.minute
-            strtTime = str(TY).zfill(2) + ':' + str(TZ).zfill(2)
-            Etime = i['endtime']
-            UY = Etime.hour
-            UZ = Etime.minute
-            endTime = str(UY).zfill(2) + ':' + str(UZ).zfill(2)
-            summary = i['summary']
-            description = i['description']
-            allday = i['allday']
-            lis.append(['GLG',summary, description, Date, strtTime, endTime, allday])
+        
+        if i.Date.day == day:
+            lis.append(i)
     return lis
-
-def SuperList(SQLLIST,GLGLIST):
-    megalist = []
-    for i in SQLLIST:
-        TIMED = datetime.datetime.strptime(i[3], '%Y-%m-%d %H:%M:%S').date()
-        k = [i[0],i[1],i[2],TIMED,i[4],i[5],i[6]]
-        megalist.append(k)
-    for y in GLGLIST:
-        g = [y[0],y[1],y[2],y[3],y[4],y[5],y[6]]
-        megalist.append(g)
-
-    megalist.sort(key=lambda item:item[4], reverse=True)
-    return megalist
 
 def CreateMonthDict(MONTH):
     D = DateInformation(MONTH)
     GM = GoogleMonth(D['Year'],D['NumberOfCurrentMonth'])
-    
+    #print('GM = GoogleMonth(D:',len(GM))
     Location = []
     MDict = {}
     for i in range (D['DaysInMonth']):
@@ -170,10 +167,9 @@ def CreateMonthDict(MONTH):
         Y = int(starting % D['DaysInWeek'])
         X = int(starting / D['DaysInWeek'])
         ThisDate = datetime.datetime(D['Year'], D['NumberOfCurrentMonth'], day+1)
-        ThisDayEvents = returnAllFromDay(ThisDate)
+        ThisDayEvents = FromDatabaseToEventObject(ThisDate)
         ALG = AllFromGoogleMonthDay(GM,i+1)
-        superList = SuperList(ThisDayEvents, ALG)
-        MDict[day+1] = [X,Y,ThisDate,superList]
+        MDict[day+1] = [X,Y,ThisDate,ThisDayEvents + ALG]
     return MDict
 
 #########################################################
@@ -200,14 +196,15 @@ class Calender(tk.Frame):
         
 
         events = event.widget.interesting
+        #print('calendar size: ', len(events))
         date = str(event.widget.dates)[0:10]
         del dateIs[:]
         dateIs.append(date)
-        events.sort(key = lambda x: x[4])
+        events = sorted(events, key=operator.attrgetter('strtTime'))
         r = 2
         if len(events) > 0:
             for i in events:
-                theEvent = i[4]+'-'+i[5]+' - '+i[1]
+                theEvent = i.startTimeToString() +'-'+i.endTimeToString()+' - '+i.summary
                 self.event = Label(self.main, text=theEvent)
                 self.event.pack(anchor='nw', expand=False)
                 r+=2
@@ -234,6 +231,7 @@ class Calender(tk.Frame):
         TX.pack()
         CurrentM = DateInformation(currentMonth())
         CMonth= CreateMonthDict(currentMonth())
+        #print('indays, cmonth:', len(CMonth))
 
         for key,value in CMonth.items():
             DAY = key
@@ -241,21 +239,19 @@ class Calender(tk.Frame):
             Y = value[1]
             DATE = value[2]
             FrameColor = 'white'
-            #TODAY = False
             DAYEVENTS = value[3]
             if len(DAYEVENTS) > 0:
                 FrameColor = 'brown'
-            #ALLDAY = False
+                #print('brown')
             ##CHECKS IF ALL DAY:
             for i in DAYEVENTS:
-                if i[6] == 1:
+                if i.allday:
                     #ALLDAY = True
                     FrameColor = 'blue'
+                    #print('itsallday')
             if DATE.date() == datetime.datetime.today().date():
                 #TODAY = True
                 FrameColor = 'green'
-                #print('TODAY')
-
             day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg=FrameColor)
             day.grid(row=X, column=Y)
             text = day.create_text(10, 10, anchor="nw")
@@ -334,7 +330,7 @@ class Event(tk.Frame):
         self.CreateEvent()
 
     def CreateEvent(self):
-        print(self.currentDate)
+        #print(self.currentDate)
         self.toplevel = Toplevel()
         self.toplevel.title('Create New Event')
         self.toplevel.geometry('290x400')
@@ -453,50 +449,64 @@ class Event(tk.Frame):
         self.toplevel.destroy()
         app.changeMonth()
 
-def StringDateToGoogleDate(date,starts,ends):
-    SDate = date.split('-')
-    SStarts = starts.split(':')
-    SEnds = ends.split(':')
-    startDateTime = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]),int(SStarts[0]),int(SStarts[1])).isoformat() + 'Z'
-    endDateTime = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]),int(SEnds[0]),int(SEnds[1])).isoformat() + 'Z'
-    return ([startDateTime,endDateTime])
+##def StringDateToGoogleDate(date,starts,ends):
+##    SDate = date.split('-')
+##    SStarts = starts.split(':')
+##    SEnds = ends.split(':')
+##    startDateTime = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]),int(SStarts[0]),int(SStarts[1])).isoformat() + 'Z'
+##    endDateTime = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]),int(SEnds[0]),int(SEnds[1])).isoformat() + 'Z'
+##    return ([startDateTime,endDateTime])
 
 def GrapFromEvent(CreateEventData):
-    Title = CreateEventData.summaryEntry.get()
-    Description = CreateEventData.descriptionEntry.get('1.0',END)
-    Date = CreateEventData.dayEntry.get()
-    Starts = CreateEventData.starttimeEntry.get()
-    Ends = CreateEventData.enddtimeEntry.get()
-    AllDay = CreateEventData.y.get()
-    return ([Title,Description,Date,Starts,Ends,AllDay])
+##    Title = CreateEventData.summaryEntry.get()
+##    Description = CreateEventData.descriptionEntry.get('1.0',END)
+##    Date = CreateEventData.dayEntry.get()
+##    Starts = CreateEventData.starttimeEntry.get()
+##    Ends = CreateEventData.enddtimeEntry.get()
+##    AllDay = CreateEventData.y.get()
+
+    event = CE(
+        '00', ##id
+        CreateEventData.summaryEntry.get(), ##summary
+        CreateEventData.descriptionEntry.get('1.0',END), ##description
+        CreateEventData.starttimeEntry.get(), ##beginTime
+        CreateEventData.enddtimeEntry.get(), ##endTime
+        False, ##from google account
+        CreateEventData.dayEntry.get() ##date
+        )
+
+    #print(event.summary)
+    #print(CreateEventData.dayEntry.get())
+    return event
+    #eturn ([Title,Description,Date,Starts,Ends,AllDay])
 
     
 def AddToCalendar(data):
-    Date = data[2]
-    SDate = Date.split('-')
-    DateTimeDate = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]))
-    insertIntoDB(data[0], data[1], DateTimeDate, data[3], data[4], data[5])
+##    Date = data[2]
+##    SDate = Date.split('-')
+##    DateTimeDate = datetime.datetime(int(SDate[0]),int(SDate[1]),int(SDate[2]))
+    insertIntoDB(data.summary, data.description, data.getDatabaseDate(), data.startTimeToString(), data.endTimeToString(), data.allday)
 
 def AddToGoogleCalendar(data):
-    #G = Gservice
-    dateDate = StringDateToGoogleDate(data[2],data[3],data[4])
-    event = {
-      'summary': data[0],
-      'description': data[1],
-      'start': {
-        'dateTime': dateDate[0],
-        'timeZone': 'Atlantic/Reykjavik',
-      },
-      'end': {
-        'dateTime': dateDate[1],
-        'timeZone': 'Atlantic/Reykjavik',
-      'reminders': {
-        'useDefault': True, },
-      },
-    }
+    event = data.GetGoogleEventDictionary()
+##    #G = Gservice
+##    dateDate = StringDateToGoogleDate(data[2],data[3],data[4])
+##    event = {
+##      'summary': data[0],
+##      'description': data[1],
+##      'start': {
+##        'dateTime': dateDate[0],
+##        'timeZone': 'Atlantic/Reykjavik',
+##      },
+##      'end': {
+##        'dateTime': dateDate[1],
+##        'timeZone': 'Atlantic/Reykjavik',
+##      'reminders': {
+##        'useDefault': True, },
+##      },
+##    }
     event = Gservice.events().insert(calendarId='primary', body=event).execute()
     print ('Event created: %s' % (event.get('htmlLink')))
-    return 0
 
 ##VIEW SINGLE DAY ON CALENDAR
 #-----##TODO##
@@ -518,17 +528,17 @@ def AddToGoogleCalendar(data):
 
 ##TEST DATA FOR SQL
 createTable()
-
-x = datetime.datetime(2016,11,13)
-#print(x)
-#insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
-
-x = datetime.datetime(2016,12,13)
-#insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
-
-x = datetime.datetime(2016,12,17)
-#insertIntoDB('BYE', 'THAR', x, '14:00', '18:00', 'False')
-#currentMonth(0,1,2)
+##
+##x = datetime.datetime(2016,11,13)
+###print(x)
+##insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
+##
+x = datetime.datetime(2016,12,29)
+insertIntoDB('HI', 'THAR', x, '14:00', '18:00', 'False')
+##
+##x = datetime.datetime(2016,12,17)
+##insertIntoDB('BYE', 'THAR', x, '14:00', '18:00', 'False')
+###currentMonth(0,1,2)
 Gservice = gapi.GetCredentials()
 GoogleEvents = gapi.GenerateList(gapi.Get12MonthEvents(Gservice))
 root = tk.Tk()
