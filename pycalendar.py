@@ -200,6 +200,7 @@ class Calender(tk.Frame):
     def CreateEvent(self, event):
         self.toplevel = Toplevel(self)
         self.toplevel.geometry('400x400')
+        self.toplevel.title('Events')
 
         self.main = Frame(self.toplevel, height=370, width=400)
         self.main.pack(side=TOP, anchor='nw')
@@ -347,6 +348,7 @@ class Event(tk.Frame):
     def CreateEvent(self):
         self.toplevel = Toplevel()
         self.toplevel.geometry('400x400')
+        self.toplevel.title('Create New Event')
         summary = Label(self.toplevel, text='Title')
         summary.grid(row=0, column=0)
         self.summaryEntry = Entry(self.toplevel)
@@ -480,6 +482,7 @@ x = datetime.datetime(2016,12,17)
 Gservice = gapi.GetCredentials()
 GoogleEvents = gapi.GenerateList(gapi.Get12MonthEvents(Gservice))
 root = tk.Tk()
+root.title('QCal')
 app = Application(root)
 app.parent.geometry('603x570')
 app.parent.resizable(0,0)
