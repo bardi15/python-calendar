@@ -169,7 +169,6 @@ def CreateMonthDict(MONTH):
         ThisDate = datetime.datetime(D['Year'], D['NumberOfCurrentMonth'], day+1)
         ThisDayEvents = FromDatabaseToEventObject(ThisDate)
         ALG = AllFromGoogleMonthDay(GM,i+1)
-        ALG = []
         MDict[day+1] = [X,Y,ThisDate,ThisDayEvents + ALG]
     return MDict
 
