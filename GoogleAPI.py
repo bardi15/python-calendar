@@ -13,6 +13,8 @@ import datetime
 import dateutil.parser
 from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
+from CalendarEvent import CalendarEvent as CE
+
 
 try:
     import argparse
@@ -102,36 +104,32 @@ def GenerateList(eventsResult):
     MonthDicts = defaultdict(list)
     lis = []
     for i in eventsResult['items']:
-        _summary = i['summary']
-        _id = i['iCalUID']
-        _link = i['htmlLink']
         try:
             _description = i['description']
         except Exception:
-            _description = ''
-        _creator = i['creator']
-        _allDay = False
+            _description = ''    
         try:
-            _allDayDate = dateutil.parser.parse(i['start']['date'])
+            _allDayDate = i['start']['date']
             _allDay = True
             _dt1 = _allDayDate
             _dt2 = _allDayDate
         except Exception:
-            _dt1 = dateutil.parser.parse(i['start']['dateTime'])
-            _dt2 = dateutil.parser.parse(i['end']['dateTime'])
-        event = {}
-        event['summary'] = _summary
-        event['id'] = _id
-        event['link'] = _link
-        event['description'] = _description
-        event['creator'] = _creator
-        event['starttime'] = _dt1
-        event['endtime'] = _dt2
-        event['allday'] = _allDay
-        MONTH = _dt1.month
-        YEAR = _dt1.year
+            _dt1 = i['start']['dateTime']
+            _dt2 = i['end']['dateTime']
+        event = CE(
+            i['id'],
+            i['summary'],
+            _description,
+            _dt1,
+            _dt2,
+            True
+        )
+
+##        print(event.strtTime)
+##        print(event.endTime)
+##        print(event.Date)
+        MONTH = event.Date.month
+        YEAR = event.Date.year
         MonthDicts[(YEAR,MONTH)].append(event)
-        lis.append(event)
+        #print('lengtj:', len(MonthDicts))
     return MonthDicts 
-
-
