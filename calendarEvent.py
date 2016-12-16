@@ -42,7 +42,7 @@ class CalendarEvent:
         self.GoogleAccount = GoogleAccount
         
         if self.strtTime > self.endTime:
-            print('StartTime must not be after end Time')
+            #print('StartTime must not be after end Time')
             try:
                 self.endTime = datetime.time(self.strtTime.hour+1,self.strtTime.minute,
                                              self.strtTime.second)

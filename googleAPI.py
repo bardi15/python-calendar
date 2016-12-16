@@ -58,8 +58,8 @@ class GoogleAPI:
         if not credentials or credentials.invalid:
             flow = client.flow_from_clientsecrets(self.CLIENT_SECRET_FILE, self.SCOPES)
             flow.user_agent = self.APPLICATION_NAME
-            if flags:
-                credentials = tools.run_flow(flow, store, flags)
+            if self.flags:
+                credentials = tools.run_flow(flow, store, self.flags)
             else: # Needed only for compatibility with Python 2.6
                 credentials = tools.run(flow, store)
             print('Storing credentials to ' + credential_path)
@@ -115,7 +115,11 @@ class GoogleAPI:
             try:
                 _description = i['description']
             except Exception:
-                _description = ''    
+                _description = ''
+            try:
+                _summary = i['summary']
+            except Exception:
+                _summary = ''
             try:
                 _allDayDate = i['start']['date']
                 _allDay = True
@@ -126,7 +130,7 @@ class GoogleAPI:
                 _dt2 = i['end']['dateTime']
             event = CE(
                 i['id'],
-                i['summary'],
+                _summary,
                 _description,
                 _dt1,
                 _dt2,
