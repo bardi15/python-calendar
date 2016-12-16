@@ -11,9 +11,10 @@ class CalendarEvent:
         self.summary = summary
         self.description = description
         self.allday = False
+        self.isValid = True
         if Date is None: #IMPORT FROM GOOGLE
-            strtTime = dateutil.parser.parse(strtTime)
-            endTime = dateutil.parser.parse(endTime)
+            strtTime = self.dateUtilParser(strtTime)
+            endTime = self.dateUtilParser(endTime)
             if strtTime == endTime:
                 self.allday = True
             self.Date = strtTime.date()
@@ -40,25 +41,39 @@ class CalendarEvent:
         if  type(GoogleAccount) is not bool:
             raise ValueError('GoogleAccount Must be Boolean')
         self.GoogleAccount = GoogleAccount
-        
-        if self.strtTime > self.endTime:
-            #print('StartTime must not be after end Time')
-            try:
-                self.endTime = datetime.time(self.strtTime.hour+1,self.strtTime.minute,
-                                             self.strtTime.second)
-            except Exception: pass
+
+        try:
+            if self.strtTime > self.endTime:
+                self.endTime = datetime.time(23,59,59)
+        except Exception:
+            self.isValid = False
         
     def __str__(self):
         return str(self.summary + ', ' + self.description)
-        
+
+    def dateUtilParser(self,time):
+        try:
+            return dateutil.parser.parse(time)
+        except Exception:
+            self.isValid = False
+            return 0
+    
     def stringToDateTime(self,string):
-        SDate = string[:10]
-        SDate = SDate.split('-')
-        return datetime.date(int(SDate[0]),int(SDate[1]),int(SDate[2]))
+        try:
+            SDate = string[:10]
+            SDate = SDate.split('-')
+            return datetime.date(int(SDate[0]),int(SDate[1]),int(SDate[2]))
+        except Exception:
+            self.isValid = False
+            return 0
 
     def stringTimeToTime(self,string):
-        STime = string.split(':')
-        return datetime.time(int(STime[0]),int(STime[1]))
+        try:
+            STime = string.split(':')
+            return datetime.time(int(STime[0]),int(STime[1]))
+        except Exception:
+            self.isValid = False
+            return 0
 
     def endTimeToString(self):
         return(self.timeToString(self.endTime))
@@ -83,6 +98,10 @@ class CalendarEvent:
 
     def GetYearMonthArray(self):
         return (self.Date.year, self.Date.month)
+
+
+    def IsValid(self):
+        return self.isValid
     
     def GetGoogleEventDictionary(self):
         if self.allday:

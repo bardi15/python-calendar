@@ -146,10 +146,6 @@ class GoogleAPI:
         self.service.events().delete(calendarId='primary', eventId=idNum).execute()
         print('deleted from google calendar')
 
-##    def AddGoogleCalendarEvent(service,event):
-##        event = service.events().insert(calendarId='primary', body=event).execute()
-##        print ('Event created: %s' % (event.get('htmlLink')))
-        
     def AddGoogleCalendarEvent(self,event):
         event = self.service.events().insert(calendarId='primary', body=event).execute()
         print ('Event created: %s' % (event.get('htmlLink')))       

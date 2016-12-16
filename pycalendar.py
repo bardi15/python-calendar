@@ -254,8 +254,12 @@ class Event(tk.Frame):
         
     def on_submit(self):
         data = GrapFromEvent(self)
-        
 
+########ÚTFÆRA:
+        if not data.IsValid():
+            sys.exit()
+##############
+            
         if self.g.get() == 1:
             CFUtil.AddToGoogleCalendar(data)
         else:
