@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import *
 import datetime
 import operator
-
+import tkinter.messagebox
 from calendarEvent import CalendarEvent as CE
 from database import Database
 from calendarFunctions import CalendarFunc
@@ -178,6 +178,17 @@ class Application(Frame):
 #########################################################
 ##CREATE EVENT MODAL                                    #
 #########################################################
+def messageWindow():
+##    top = Tk()
+##    top.geometry("100x100")
+##    def hello():
+    messagebox.showinfo("Not valid input ", "Hello World")
+
+##    B1 = Button(top, text = "Say Hello")
+##    B1.place(x=35,y=50)
+
+##    top.mainloop()
+            
 class Event(tk.Frame):
     def __init__(self, cDate, master=None):
         super().__init__(master)
@@ -251,14 +262,20 @@ class Event(tk.Frame):
         
         submit = Button(self.bottomFrame, text ="Submit", command=self.on_submit)
         submit.grid(row=9, column=1, sticky=E)
+
+##    def close(self):
+##        print('fdsdfds')
+##        self.destroy()
+
         
     def on_submit(self):
         data = GrapFromEvent(self)
 
+
+    
 ########ÚTFÆRA:
         if not data.IsValid():
-            sys.exit()
-##############
+            messagebox.showinfo("Not valid input ", "Please check your input and try agian")
             
         if self.g.get() == 1:
             CFUtil.AddToGoogleCalendar(data)
