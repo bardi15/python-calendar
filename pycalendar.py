@@ -47,9 +47,8 @@ class Calender(tk.Frame):
             for i in range(len(self.events)):
                 self.line = Frame(self.main,height=30, width=400)
                 self.line.pack(expand=True, anchor='nw')
-                theEvent = (self.events[i].startTimeToString() +'-'+
-                            self.events[i].endTimeToString()+' - '+
-                            self.events[i].summary)
+                theEvent = (self.events[i].GetStartToEndTime()
+                            +' - '+ self.events[i].summary)
                 self.event = Label(self.line, text=theEvent)
                 self.event.pack(side=LEFT, expand=True)
                 self.remove = Button(self.line, text="Remove", command =lambda i=i: self.Delete(i), bd=1, relief=SOLID )
@@ -92,12 +91,12 @@ class Calender(tk.Frame):
             FrameColor = 'white'
             DAYEVENTS = value[3]
             if len(DAYEVENTS) > 0:
-                FrameColor = 'brown'
+                FrameColor = 'rosy brown'
             ##CHECKS IF ALL DAY:
             for i in DAYEVENTS:
                 if i.allday:
                     #ALLDAY = True
-                    FrameColor = 'blue'
+                    FrameColor = 'light blue'
             if DATE.date() == datetime.datetime.today().date():
                 #TODAY = True
                 FrameColor = 'green'
@@ -147,7 +146,6 @@ class Application(Frame):
         self.cur = Button(self.bottomFrame, text = 'Current Month', command = self.currMonth)
         self.cur.pack(side = LEFT)
 
-
     def currMonth(self):
         today = datetime.datetime.today()
         CFUtil.currentMonth(today.year, today.month, today.day)
@@ -178,17 +176,7 @@ class Application(Frame):
 #########################################################
 ##CREATE EVENT MODAL                                    #
 #########################################################
-def messageWindow():
-##    top = Tk()
-##    top.geometry("100x100")
-##    def hello():
-    messagebox.showinfo("Not valid input ", "Hello World")
-
-##    B1 = Button(top, text = "Say Hello")
-##    B1.place(x=35,y=50)
-
-##    top.mainloop()
-            
+           
 class Event(tk.Frame):
     def __init__(self, cDate, master=None):
         super().__init__(master)
@@ -262,21 +250,13 @@ class Event(tk.Frame):
         
         submit = Button(self.bottomFrame, text ="Submit", command=self.on_submit)
         submit.grid(row=9, column=1, sticky=E)
-
-##    def close(self):
-##        print('fdsdfds')
-##        self.destroy()
-
-        
+   
     def on_submit(self):
         data = GrapFromEvent(self)
-
-
-    
-########ÚTFÆRA:
         if not data.IsValid():
             messagebox.showinfo("Not valid input ", "Please check your input and try agian")
-            
+            return
+        
         if self.g.get() == 1:
             CFUtil.AddToGoogleCalendar(data)
         else:
@@ -294,7 +274,8 @@ def GrapFromEvent(CreateEventData):
         CreateEventData.starttimeEntry.get(), ##beginTime
         CreateEventData.enddtimeEntry.get(), ##endTime
         False, ##from google account
-        CreateEventData.dayEntry.get() ##date
+        CreateEventData.dayEntry.get(), ##date
+        CreateEventData.y.get() ## all day
         )
     return event
 

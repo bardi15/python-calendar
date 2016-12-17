@@ -4,6 +4,10 @@ from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
 from googleAPI import GoogleAPI as gapi
 
+#########################################################
+##CALANDER FUNCTIONS:                                   #
+#########################################################
+
 class CalendarFunc:
     def __init__(self,dBConn):
         self.currMonth = [0]
@@ -64,19 +68,8 @@ class CalendarFunc:
 
     ##ONLY FOR REFRESH
     def RefreshMonth(self,event,remove):
-        #self.GoogleEvents = self.gapi.GenerateList()
         self.gapi.Refresh()
         self.GoogleEvents = self.gapi.GenerateList()
-        #self.MDict = self.CreateMonthDict()
-##        idNum = event.idNum
-##        ARRE = event.GetYearMonthArray()
-##        lix = self.GoogleEvents[ARRE]
-##        if remove:
-##            for i in lix:
-##                if i.idNum == idNum:
-##                    self.GoogleEvents[ARRE].remove(i)
-##        else:
-##            self.GoogleEvents[ARRE].append(event)
 
     def AllFromGoogleMonthDay(self,gMonth,day):
         lis = []
@@ -107,6 +100,7 @@ class CalendarFunc:
 
 
     def AddToCalendar(self,data):
+        print(data.allday)
         self.dBConn.insertIntoDB(data.summary, data.description, data.getDatabaseDate(),
                                  data.startTimeToString(), data.endTimeToString(), data.allday)
 

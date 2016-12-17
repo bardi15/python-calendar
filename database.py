@@ -61,7 +61,8 @@ class Database:
                 i[4], ##beginTime
                 i[5], ##endTime
                 False, ##from google account
-                i[3] ##date
+                i[3], ##date
+                i[6] ##allday
             )
             lis.append(event)
         return lis

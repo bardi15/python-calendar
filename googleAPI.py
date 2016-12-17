@@ -1,7 +1,6 @@
 from __future__ import print_function
 import httplib2
 import os
-import pprint
 
 from apiclient import discovery
 from oauth2client import client
@@ -16,6 +15,10 @@ from dateutil.relativedelta import relativedelta
 from calendarEvent import CalendarEvent as CE
 
 
+#########################################################
+##GOOGLE API                                            #
+#########################################################
+
 class GoogleAPI:
     def __init__(self):
         self.flags = self.getFlags()
@@ -24,10 +27,8 @@ class GoogleAPI:
         self.APPLICATION_NAME = 'Google Calendar API Python Quickstart'
         self.credentials = self.get_credentials()
         self.http = self.credentials.authorize(httplib2.Http())
-       # self.service = discovery.build('calendar', 'v3', http=self.http)
         self.service = self.getService()
         self.eventsResult = self.Get12MonthEvents()
-        #print(self.service)
 
     def getFlags(self):
         try:
@@ -66,33 +67,9 @@ class GoogleAPI:
         return credentials
 
     def getService(self):
-        #credentials = get_credentials()
         http = self.credentials.authorize(httplib2.Http())
         service = discovery.build('calendar', 'v3', http=http)
         return service
-
-    def getTime(self):
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        return now
-
-    def getStartTime(self):
-        B3 = datetime.datetime(date.today().year,1,1)
-        now = B3.isoformat() + 'Z'
-        return now
-
-    def getStartAndEndOfMonth(self,year,month):
-        Range = monthrange(year, month)
-        LDOM = Range[1]
-        startM = datetime.datetime(year,month,1).isoformat() + 'Z'
-        endM = datetime.datetime(year,month,LDOM).isoformat() + 'Z'
-        return [startM,endM]
-
-##    def GetEvents(self,year,month,service):
-##        now = getStartAndEndOfMonth(year,month)
-##        eventsResult = self.service.events().list(
-##            calendarId='primary', timeMin=now[0], timeMax=now[1], maxResults=2500, singleEvents=True,
-##            orderBy='startTime').execute()
-##        return eventsResult
 
     def Refresh(self):
         self.eventsResult = self.Get12MonthEvents()

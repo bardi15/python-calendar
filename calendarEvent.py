@@ -5,12 +5,16 @@ import time
 from dateutil.parser import parse
 import dateutil.parser
 
+#########################################################
+##CALANDER EVENT DATA TYPE:                             #
+#########################################################
+
 class CalendarEvent:
-    def __init__(self, idNum, summary, description,  strtTime, endTime, GoogleAccount, Date=None):
+    def __init__(self, idNum, summary, description,  strtTime, endTime, GoogleAccount, Date=None, allday=None):
         self.idNum = idNum
         self.summary = summary
         self.description = description
-        self.allday = False
+        self.allday = allday
         self.isValid = True
         if Date is None: #IMPORT FROM GOOGLE
             strtTime = self.dateUtilParser(strtTime)
@@ -82,10 +86,19 @@ class CalendarEvent:
         return(self.timeToString(self.strtTime))
     
     def timeToString(self,time):
-        return str(time.hour).zfill(2) + ':' + str(time.minute).zfill(2)
-
-    def dateToString(self):
-        return self.Date.strftime("%Y-%m-%d")
+        try:
+            return str(time.hour).zfill(2) + ':' + str(time.minute).zfill(2)
+        except Exception:
+            self.isValid = False
+            return 0
+        
+    def dateToString(self,addDays=None):
+        _date = datetime.datetime.combine(self.Date, datetime.datetime.min.time())
+        if addDays is not None:
+            _date = (_date + datetime.timedelta(days=1)).date()
+        else:
+            _date = self.Date
+        return _date.strftime("%Y-%m-%d")
 
     def getDatabaseDate(self):
         return self.Date.strftime("%Y-%m-%d %H:%M:%S")
@@ -96,12 +109,20 @@ class CalendarEvent:
     def GetGoogleEndDate(self):
         return datetime.datetime.combine(self.Date, self.endTime).isoformat() + 'Z'
 
+    def GetGoogleDate(self):
+        return self.Date.isoformat() + 'Z'
+
     def GetYearMonthArray(self):
         return (self.Date.year, self.Date.month)
 
-
     def IsValid(self):
         return self.isValid
+
+    def GetStartToEndTime(self):
+        if self.allday:
+            return 'All day'
+        else:
+            return self.startTimeToString() + '-' + self.endTimeToString()
     
     def GetGoogleEventDictionary(self):
         if self.allday:
@@ -109,12 +130,10 @@ class CalendarEvent:
               'summary': self.summary,
               'description': self.description,
               'start': {
-                'dateTime': self.Date,
-                'timeZone': 'Atlantic/Reykjavik',
+                'date': self.dateToString(),
               },
               'end': {
-                'dateTime': self.Date,
-                'timeZone': 'Atlantic/Reykjavik',
+                'date': self.dateToString(1),
               'reminders': {
                 'useDefault': True, },
               },
