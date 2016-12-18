@@ -42,7 +42,7 @@ class Calender(tk.Frame):
         del dateIs[:]
         dateIs.append(date)
         self.events = sorted(self.events, key=operator.attrgetter('strtTime'))
-        #r = 2
+        
         if len(self.events) > 0:
             for i in range(len(self.events)):
                 self.line = Frame(self.main,height=30, width=400)
@@ -53,7 +53,6 @@ class Calender(tk.Frame):
                 self.event.pack(side=LEFT, expand=True)
                 self.remove = Button(self.line, text="Remove", command =lambda i=i: self.Delete(i), bd=1, relief=SOLID )
                 self.remove.pack(side=RIGHT,expand=True)
-                #r+=2
         else:
             self.noEvent = Label(self.main, text='There are no events for this day')
             self.noEvent.pack(side=TOP)
@@ -91,14 +90,12 @@ class Calender(tk.Frame):
             FrameColor = 'white'
             DAYEVENTS = value[3]
             if len(DAYEVENTS) > 0:
-                FrameColor = 'rosy brown'
+                FrameColor = 'dodger blue'
             ##CHECKS IF ALL DAY:
             for i in DAYEVENTS:
                 if i.allday:
-                    #ALLDAY = True
-                    FrameColor = 'light blue'
+                    FrameColor = 'royal blue'
             if DATE.date() == datetime.datetime.today().date():
-                #TODAY = True
                 FrameColor = 'green'
             day = tk.Canvas(TX, width=_RCTWIDTH, height=_RCTHEIGHT, bg=FrameColor)
             day.grid(row=X, column=Y)
